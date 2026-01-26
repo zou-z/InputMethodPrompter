@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="View">
+      <UniqueIdentifier>{bbdfaef0-8068-458a-8fb3-77023f7a0ad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{e920d659-bf2a-4897-b68b-4749a384b187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="View\Window">
+      <UniqueIdentifier>{05ee50ea-979b-4400-b2af-68727b04cb2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility">
+      <UniqueIdentifier>{4cab4e92-483b-4870-82a5-9f2179ac4e3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\UIAutomation">
+      <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\InputMethod">
+      <UniqueIdentifier>{d4cd6a0b-c2fb-4b84-ae21-c2b9f6b6859e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Hook">
+      <UniqueIdentifier>{abf4cec5-d31d-4b45-b001-187629889782}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\RegistryKey">
+      <UniqueIdentifier>{9d50f5a7-afe5-4d22-839e-bd9ed22e119d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Application.ixx" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Prompter.ixx">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.ixx">
+      <Filter>View\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowExtensions.ixx">
+      <Filter>View\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="PromptWindow.ixx">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="Strings.ixx">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SingletonMessageBox.ixx">
+      <Filter>View\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="TrayIcon.ixx">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="DebouncedAction.ixx">
+      <Filter>Core\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorRecognizer.ixx">
+      <Filter>Core\UIAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="UiaWrapper.ixx">
+      <Filter>Core\UIAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="InputMethodDetector.ixx">
+      <Filter>Core\InputMethod</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardHook.ixx">
+      <Filter>Core\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="WinEventHook.ixx">
+      <Filter>Core\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistryKey.ixx">
+      <Filter>Core\RegistryKey</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="InputMethodPrompter.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="InputMethodPrompter.png">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
