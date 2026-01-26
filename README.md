@@ -1,0 +1,2 @@
+# InputMethodPrompter
+在输入框边缘显示输入法的当前输入模式的小工具
