@@ -263,17 +263,17 @@ private:
 
     void HandleWinEvent()
     {
-        IUIAutomationElement* lastElement = nullptr;
+        winrt::com_ptr<IUIAutomationElement> lastElement;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            lastElement = lastFocusedElement.get();
+            lastElement = lastFocusedElement;
         }
 
         if (lastElement == nullptr)
             return;
 
         RECT position;
-        if (editorRecognizerService.GetEditorPosition(automation.get(), lastElement, position))
+        if (editorRecognizerService.GetEditorPosition(automation.get(), lastElement.get(), position))
             window->GetBoundary().SetPosition(position.left, position.bottom);
     }
 
