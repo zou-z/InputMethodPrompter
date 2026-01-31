@@ -54,7 +54,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Imm32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -70,21 +70,24 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Imm32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.ixx" />
     <ClCompile Include="DebouncedAction.ixx" />
+    <ClCompile Include="Direct2DRenderer.ixx" />
     <ClCompile Include="EditorRecognizer.ixx" />
     <ClCompile Include="InputMethodDetector.ixx" />
     <ClCompile Include="KeyboardHook.ixx" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PromptContentRenderer.ixx" />
     <ClCompile Include="Prompter.ixx" />
     <ClCompile Include="PromptWindow.ixx" />
     <ClCompile Include="RegistryKey.ixx" />
     <ClCompile Include="SingletonMessageBox.ixx" />
     <ClCompile Include="Strings.ixx" />
+    <ClCompile Include="SegoeFluentIcons.ixx" />
     <ClCompile Include="TrayIcon.ixx" />
     <ClCompile Include="UiaWrapper.ixx" />
     <ClCompile Include="Window.ixx" />

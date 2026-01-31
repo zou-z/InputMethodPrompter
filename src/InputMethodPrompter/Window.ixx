@@ -29,12 +29,12 @@ public:
         return handle;
     }
 
-    void Initialize()
+    void Initialize(UINT width = CW_USEDEFAULT, UINT height = CW_USEDEFAULT)
     {
         if (handle == nullptr)
         {
             RegisterWindowClass(instance, this->className);
-            handle = OnCreateWindow(instance, title, this->className);
+            handle = OnCreateWindow(instance, title, this->className, width, height);
         }
     }
 
@@ -59,7 +59,12 @@ public:
     }
 
 protected:
-    virtual HWND OnCreateWindow(HINSTANCE instance, const std::wstring title, const std::wstring className)
+    virtual HWND OnCreateWindow(
+        HINSTANCE instance,
+        const std::wstring title,
+        const std::wstring className,
+        UINT width,
+        UINT height)
     {
         return CreateWindowW(
             className.c_str(),
@@ -67,8 +72,8 @@ protected:
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             0,
-            CW_USEDEFAULT,
-            0,
+            width,
+            height,
             nullptr,
             nullptr,
             instance,
@@ -82,28 +87,17 @@ protected:
         {
         case WM_DPICHANGED:
         {
-            UINT newDpi = HIWORD(wParam);
-            auto scale = (float)newDpi / (float)dpi;
-
-            RECT rect;
-            GetWindowRect(handle, &rect);
-            int width = rect.right - rect.left;
-            int height = rect.bottom - rect.top;
-            int newWidth = (int)(width * scale);
-            int newHeight = (int)(height * scale);
-
+            dpi = HIWORD(wParam);
             auto suggestedRect = (RECT*)lParam;
             SetWindowPos(
-                handle,
-                nullptr,
-                suggestedRect->left,
-                suggestedRect->top,
-                newWidth,
-                newHeight,
-                SWP_NOZORDER | SWP_NOACTIVATE
+              handle,
+              nullptr,
+              suggestedRect->left,
+              suggestedRect->top,
+              suggestedRect->right - suggestedRect->left,
+              suggestedRect->bottom - suggestedRect->top,
+              SWP_NOZORDER | SWP_NOACTIVATE
             );
-
-            dpi = newDpi;
         }
         break;
 

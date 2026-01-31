@@ -55,9 +55,7 @@ public:
             Strings::ApplicationName.data(),
             Strings::ApplicationName.data() + std::wstring(L" Class")
         );
-        mainWindow->Initialize();
-        mainWindow->GetBoundary().SetSize(38, 38);
-        mainWindow->GetStatus().SetTopmost(true);
+        mainWindow->Initialize(28, 28);
 
         trayIcon = std::make_unique<TrayIcon>();
         trayIcon->Init(instance);

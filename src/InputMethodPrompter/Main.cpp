@@ -11,6 +11,5 @@ int APIENTRY wWinMain(
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    Application app(hInstance);
-    return app.Run();
+    return Application(hInstance).Run();
 }

@@ -29,6 +29,9 @@
     <Filter Include="Core\RegistryKey">
       <UniqueIdentifier>{9d50f5a7-afe5-4d22-839e-bd9ed22e119d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="View\Direct2D">
+      <UniqueIdentifier>{fe989589-1e10-48f1-b540-3e03834b6b92}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.ixx" />
@@ -74,6 +77,15 @@
     </ClCompile>
     <ClCompile Include="RegistryKey.ixx">
       <Filter>Core\RegistryKey</Filter>
+    </ClCompile>
+    <ClCompile Include="Direct2DRenderer.ixx">
+      <Filter>View\Direct2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SegoeFluentIcons.ixx">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="PromptContentRenderer.ixx">
+      <Filter>View</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
