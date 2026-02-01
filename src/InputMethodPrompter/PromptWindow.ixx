@@ -18,9 +18,9 @@ public:
     {
     }
 
-    void SetContent(InputMethodDetector::InputMethodState state)
+    void SetContent(InputMethodDetector::InputMethodState state, bool isCapsLockToggled)
     {
-        if (renderer.SetContent(state))
+        if (renderer.SetContent(state, isCapsLockToggled))
         {
             auto hr = renderer.Render();
             if (FAILED(hr))

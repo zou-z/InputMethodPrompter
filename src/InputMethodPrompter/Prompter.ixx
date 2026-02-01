@@ -74,6 +74,16 @@ private:
             return processId != -1 && processId == textInputHostProcessId;
         }
 
+        static bool IsInputMethodRelatedKeyTriggered(DWORD vkCode)
+        {
+            auto shiftKey = vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT;
+            auto ctrlKey = vkCode == VK_CONTROL || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL;
+            auto winKey = vkCode == VK_LWIN || vkCode == VK_RWIN;
+            auto capsLockKey = vkCode == VK_CAPITAL;
+
+            return shiftKey || ctrlKey || winKey || capsLockKey;
+        }
+
     private:
         static std::wstring GetProcessNameByProcessId(DWORD processId)
         {
@@ -168,7 +178,7 @@ private:
             if (InputMethodDetector::GetInputMethodState(handle, inputMethodState) == S_OK)
             {
                 window->GetBoundary().SetPosition(position.left, position.bottom);
-                window->SetContent(inputMethodState);
+                window->SetContent(inputMethodState, GetIsCapsLockToggled());
                 window->GetStatus().Show();
             }
 
@@ -201,29 +211,9 @@ private:
         if (!window->GetStatus().IsShowing() || lastHandle == nullptr)
             return;
 
-        if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
-        {
-            auto keyEvent = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-
-            auto isShiftReleased = keyEvent->vkCode == VK_SHIFT || keyEvent->vkCode == VK_LSHIFT || keyEvent->vkCode == VK_RSHIFT;
-            auto isSpaceReleased = keyEvent->vkCode == VK_SPACE;
-
-            auto isSpacePressed = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
-            auto isCtrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0
-                || (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0
-                || (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
-            auto isWinPressed = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
-
-            // Shift松开
-            // Ctrl按下+Space松开，Ctrl按下+Space按下
-            // Win按下+Space松开，Win按下+Space按下
-            if (isShiftReleased
-                || isCtrlPressed && isSpaceReleased || isCtrlPressed && isSpacePressed
-                || isWinPressed && isSpaceReleased || isWinPressed && isSpacePressed)
-            {
-                handleKeyEventAction.Request();
-            }
-        }
+        auto keyEvent = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+        if (InputMethodUtility::IsInputMethodRelatedKeyTriggered(keyEvent->vkCode))
+            handleKeyEventAction.Request();
     }
 
     void OnWinEvent(HWND handle)
@@ -257,7 +247,7 @@ private:
         auto inputMethodState = InputMethodDetector::InputMethodState::EnglishKeyboard;
         if (InputMethodDetector::GetInputMethodState(lastHandle, inputMethodState) == S_OK)
         {
-            window->SetContent(inputMethodState);
+            window->SetContent(inputMethodState, GetIsCapsLockToggled());
         }
     }
 
@@ -299,6 +289,11 @@ private:
         }
 
         return nullptr;
+    }
+
+    static bool GetIsCapsLockToggled()
+    {
+        return (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
     }
 
 private:
