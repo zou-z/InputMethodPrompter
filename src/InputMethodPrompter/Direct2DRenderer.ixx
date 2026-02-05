@@ -14,7 +14,7 @@ export module Direct2DRenderer;
 export class Direct2DRenderer
 {
 public:
-    virtual HRESULT Initialize(HWND renderTargetHandle, UINT width, UINT height, float scale)
+    virtual HRESULT Initialize(HWND renderTargetHandle, UINT width, UINT height, float dpiScale)
     {
         auto hr = S_OK;
 
@@ -37,7 +37,7 @@ public:
         return hr;
     }
 
-    virtual HRESULT Resize(UINT width, UINT height, float scale)
+    virtual HRESULT Resize(UINT width, UINT height, float dpiScale)
     {
         auto hr = S_OK;
 

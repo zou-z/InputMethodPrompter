@@ -5,7 +5,6 @@ import Window;
 import PromptContentRenderer;
 import InputMethodDetector;
 import <Windows.h>;
-import <dwmapi.h>;
 
 export class PromptWindow : public Window
 {
