@@ -31,7 +31,14 @@ struct DefaultEditorRecognizer : EditorRecognizer
 {
     bool IsEditorElement(IUIAutomationElement* element, const ElementProperties& properties) override
     {
-        return UiaWrapper::CheckIsInputControl(element);
+        if (!UiaWrapper::IsEditControl(element) || !UiaWrapper::HasKeyboardFocus(element))
+            return false;
+
+        auto isReadOnly = false;
+        if (UiaWrapper::GetIsReadOnly(element, isReadOnly) && isReadOnly)
+            return false;
+
+        return true;
     }
 };
 

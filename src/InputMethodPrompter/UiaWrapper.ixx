@@ -1,4 +1,5 @@
 module;
+#include <winrt/base.h>
 #include <UIAutomation.h>
 export module UiaWrapper;
 
@@ -9,17 +10,32 @@ export class UiaWrapper
 public:
     UiaWrapper() = delete;
 
-    static bool CheckIsInputControl(IUIAutomationElement* element)
+    static bool IsEditControl(IUIAutomationElement* element)
     {
         CONTROLTYPEID controlType = 0;
-        if (FAILED(element->get_CurrentControlType(&controlType)) || controlType != UIA_EditControlTypeId)
-            return false;
+        return SUCCEEDED(element->get_CurrentControlType(&controlType)) && controlType == UIA_EditControlTypeId;
+    }
 
+    static bool HasKeyboardFocus(IUIAutomationElement* element)
+    {
         BOOL hasKeyboardFocus = FALSE;
-        if (FAILED(element->get_CurrentHasKeyboardFocus(&hasKeyboardFocus)) || !hasKeyboardFocus)
-            return false;
+        return SUCCEEDED(element->get_CurrentHasKeyboardFocus(&hasKeyboardFocus)) && hasKeyboardFocus == TRUE;
+    }
 
-        return true;
+    static bool GetIsReadOnly(IUIAutomationElement* element, bool& isReadOnly)
+    {
+        winrt::com_ptr<IUIAutomationValuePattern> valuePattern;
+        if (SUCCEEDED(element->GetCurrentPatternAs(UIA_ValuePatternId, IID_PPV_ARGS(valuePattern.put()))) && valuePattern != nullptr)
+        {
+            BOOL value = FALSE;
+            if (SUCCEEDED(valuePattern->get_CurrentIsReadOnly(&value)))
+            {
+                isReadOnly = value == TRUE;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static std::wstring GetElementName(IUIAutomationElement* element)
