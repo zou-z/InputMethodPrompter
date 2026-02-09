@@ -1,6 +1,7 @@
 export module PromptWindow;
 
 import std;
+import Debug;
 import Window;
 import PromptContentRenderer;
 import InputMethodDetector;
@@ -23,7 +24,7 @@ public:
         {
             auto hr = renderer.Render();
             if (FAILED(hr))
-                OutputDebugString((L"Renderer render failed " + std::to_wstring(hr) + L"\r\n").c_str());
+                OutputErrorMessage(L"Renderer render failed after setting content " + std::to_wstring(hr));
         }
     }
 
@@ -60,7 +61,7 @@ protected:
 
         auto hr = renderer.Initialize(handle, width, height, scale);
         if (FAILED(hr))
-            OutputDebugString((L"Renderer initialize failed " + std::to_wstring(hr) + L"\r\n").c_str());
+            OutputErrorMessage(L"Renderer initialize failed " + std::to_wstring(hr));
 
         return handle;
     }
@@ -80,13 +81,13 @@ protected:
             auto hr = renderer.Resize(width, height, scale);
             if (FAILED(hr))
             {
-                OutputDebugString((L"Renderer resize failed " + std::to_wstring(hr) + L"\r\n").c_str());
+                OutputErrorMessage(L"Renderer resize failed " + std::to_wstring(hr));
             }
             else
             {
                 hr = renderer.Render();
                 if (FAILED(hr))
-                    OutputDebugString((L"Renderer render failed " + std::to_wstring(hr) + L"\r\n").c_str());
+                    OutputErrorMessage(L"Renderer render failed " + std::to_wstring(hr));
             }
         }
         break;

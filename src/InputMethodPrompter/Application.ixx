@@ -5,6 +5,7 @@ import PromptWindow;
 import TrayIcon;
 import Prompter;
 import Strings;
+import Debug;
 import <Windows.h>;
 
 export class Application
@@ -12,6 +13,11 @@ export class Application
 public:
     Application(HINSTANCE instance) :instance(instance)
     {
+        DebugOnly([]
+        {
+            ConsoleLogger::Open();
+            ConsoleLogger::Info(L"Application started");
+        });
         Initialize();
     }
 
@@ -24,6 +30,8 @@ public:
             MessageBox(nullptr, Strings::ApplicationAlreadyRunning.data(), Strings::ApplicationName.data(), MB_OK | MB_ICONEXCLAMATION);
             return 0;
         }
+
+        DebugOnly([] { ConsoleLogger::Info(L"Application running..."); });
 
         MSG message;
         while (GetMessage(&message, nullptr, 0, 0))

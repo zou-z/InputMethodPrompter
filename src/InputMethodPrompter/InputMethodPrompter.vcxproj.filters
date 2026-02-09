@@ -32,6 +32,9 @@
     <Filter Include="View\Direct2D">
       <UniqueIdentifier>{fe989589-1e10-48f1-b540-3e03834b6b92}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{d5bee08f-a666-4949-b180-39dff1a29503}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.ixx" />
@@ -86,6 +89,9 @@
     </ClCompile>
     <ClCompile Include="PromptContentRenderer.ixx">
       <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.ixx">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

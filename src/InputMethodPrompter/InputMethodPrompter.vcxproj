@@ -76,6 +76,7 @@
   <ItemGroup>
     <ClCompile Include="Application.ixx" />
     <ClCompile Include="DebouncedAction.ixx" />
+    <ClCompile Include="Debug.ixx" />
     <ClCompile Include="Direct2DRenderer.ixx" />
     <ClCompile Include="EditorRecognizer.ixx" />
     <ClCompile Include="InputMethodDetector.ixx" />
