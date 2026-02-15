@@ -4,6 +4,7 @@ module;
 export module EditorRecognizer;
 
 import std;
+import Debug;
 import UiaWrapper;
 
 struct ElementProperties
@@ -31,34 +32,15 @@ struct DefaultEditorRecognizer : EditorRecognizer
 {
     bool IsEditorElement(IUIAutomationElement* element, const ElementProperties& properties) override
     {
-        if (!UiaWrapper::IsEditControl(element) || !UiaWrapper::HasKeyboardFocus(element))
+        if (!UiaWrapper::IsEditControl(element)
+            && !UiaWrapper::IsSupportPattern<IUIAutomationTextPattern>(element, UIA_TextPatternId))
+            return false;
+
+        if (!UiaWrapper::HasKeyboardFocus(element))
             return false;
 
         auto isReadOnly = false;
         if (UiaWrapper::GetIsReadOnly(element, isReadOnly) && isReadOnly)
-            return false;
-
-        return true;
-    }
-};
-
-
-struct WebPageContentEditableEditorRecognizer : EditorRecognizer
-{
-    bool IsEditorElement(IUIAutomationElement* element, const ElementProperties& properties) override
-    {
-        if (properties.FrameworkId != L"Chrome")
-            return false;
-
-        if (properties.ClassName == L"EdgePopupRowContentView")
-            return false;
-
-        BOOL hasKeyboardFocus = FALSE;
-        if (FAILED(element->get_CurrentHasKeyboardFocus(&hasKeyboardFocus)) || !hasKeyboardFocus)
-            return false;
-
-        CONTROLTYPEID controlType = 0;
-        if (FAILED(element->get_CurrentControlType(&controlType)) || controlType != UIA_GroupControlTypeId)
             return false;
 
         return true;
@@ -146,7 +128,6 @@ public:
         recognizers.push_back(std::make_unique<VisualStudioCodeEditorRecognizer>());
         recognizers.push_back(std::make_unique<SublimeTextEditorRecognizer>());
         recognizers.push_back(std::make_unique<ZedEditorRecognizer>());
-        recognizers.push_back(std::make_unique<WebPageContentEditableEditorRecognizer>());
         recognizers.push_back(std::make_unique<DefaultEditorRecognizer>());
     }
 
@@ -158,6 +139,11 @@ public:
             .ClassName = UiaWrapper::GetElementClassName(element),
             .FrameworkId = UiaWrapper::GetElementFrameworkId(element)
         };
+
+        DebugOnly([&properties]
+        {
+            ConsoleLogger::Info(L"Name: " + properties.Name + L", ClassName: " + properties.ClassName + L", FrameworkId: " + properties.FrameworkId);
+        });
 
         for (const auto& recognizer : recognizers)
         {

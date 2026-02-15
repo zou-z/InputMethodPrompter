@@ -16,6 +16,13 @@ public:
         return SUCCEEDED(element->get_CurrentControlType(&controlType)) && controlType == UIA_EditControlTypeId;
     }
 
+    template<typename TPattern>
+    static bool IsSupportPattern(IUIAutomationElement* element, long patternId)
+    {
+        winrt::com_ptr<TPattern> pattern;
+        return SUCCEEDED(element->GetCurrentPatternAs(patternId, IID_PPV_ARGS(pattern.put()))) && pattern != nullptr;
+    }
+
     static bool HasKeyboardFocus(IUIAutomationElement* element)
     {
         BOOL hasKeyboardFocus = FALSE;
