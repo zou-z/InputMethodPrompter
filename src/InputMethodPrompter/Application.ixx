@@ -12,7 +12,6 @@ export class Application
 public:
     Application(HINSTANCE instance) :instance(instance)
     {
-        Initialize();
     }
 
     int Run()
@@ -24,6 +23,8 @@ public:
             MessageBox(nullptr, Strings::ApplicationAlreadyRunning.data(), Strings::ApplicationName.data(), MB_OK | MB_ICONEXCLAMATION);
             return 0;
         }
+
+        Initialize();
 
         MSG message;
         while (GetMessage(&message, nullptr, 0, 0))
@@ -46,10 +47,9 @@ public:
         return static_cast<int>(message.wParam);
     }
 
+private:
     void Initialize()
     {
-        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
         mainWindow = std::make_shared<PromptWindow>(
             instance,
             Strings::ApplicationName.data(),
