@@ -92,6 +92,8 @@
     <ClCompile Include="UiaWrapper.ixx" />
     <ClCompile Include="Window.ixx" />
     <ClCompile Include="WindowExtensions.ixx" />
+    <ClCompile Include="WindowTests.ixx" />
+    <ClCompile Include="WindowV2.ixx" />
     <ClCompile Include="WinEventHook.ixx" />
   </ItemGroup>
   <ItemGroup>

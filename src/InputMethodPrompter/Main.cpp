@@ -1,6 +1,14 @@
 #include <windows.h>
 
+#define WINWODTESTS
+
+
+#ifdef WINWODTESTS
+import WindowTests;
+#else
 import Application;
+#endif
+
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -11,5 +19,11 @@ int APIENTRY wWinMain(
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+#ifdef WINWODTESTS
+    return WindowTests().RunTests(hInstance);
+#else
     return Application(hInstance).Run();
+#endif
 }
