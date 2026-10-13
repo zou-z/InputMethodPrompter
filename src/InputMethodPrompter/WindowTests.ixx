@@ -1,30 +1,13 @@
-module;
+﻿module;
 #include <Windows.h>
+#include "GraphicsTypes.h"
+#include "Macros.h"
 export module WindowTests;
 
-import WindowComponent;
+import std;
 import Strings;
-
-
-class TestWindow1 : public Window
-{
-public:
-
-protected:
-    TestWindow1() {}
-
-    WNDCLASSEXW OnCreateWindowClassType(HINSTANCE instance, const std::wstring& className) override
-    {
-        auto windowClass = Window::OnCreateWindowClassType(instance, className);
-        windowClass.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_APPICON));
-        windowClass.hIconSm = (HICON)LoadImage(instance, MAKEINTRESOURCE(IDI_APPICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-        //windowClass.hbrBackground = nullptr;
-        return windowClass;
-    }
-
-private:
-    static constexpr int IDI_APPICON = 1;
-};
+import WindowComponent;
+import PromptWindowV2;
 
 
 export class WindowTests
@@ -36,7 +19,7 @@ public:
 
     int RunTests(HINSTANCE instance)
     {
-        auto result = Window::Create<TestWindow1>(
+        auto result = Window::Create<PromptWindow>(
             instance,
             Strings::ApplicationName.data(),
             Strings::ApplicationName.data() + std::wstring(L" Class")
@@ -44,19 +27,21 @@ public:
         if (!result.has_value())
             return 1;
 
-        std::unique_ptr<TestWindow1> window = std::move(result.value());
-        window->GetBounds().SetBounds(10, 10, 400, 300);
+        std::unique_ptr<PromptWindow> window = std::move(result.value());
+        //window->GetBounds().SetPosition(50, 50);
+        window->GetBounds().SetPosition(150, 500);
         window->GetState().Show();
         window->GetState().SetTopmost(true);
+        window->SetInputMethodState(InputMethodState::ChineseInputMode);
+        //window->SetIsNumLocked(true);
+        window->SetIsCapsLocked(true);
+        //window->SetIsScrollLocked(true);
 
         MSG message;
         while (GetMessage(&message, nullptr, 0, 0))
         {
-            if (!TranslateAccelerator(message.hwnd, nullptr, &message))
-            {
-                TranslateMessage(&message);
-                DispatchMessage(&message);
-            }
+            TranslateMessage(&message);
+            DispatchMessage(&message);
         }
 
         return static_cast<int>(message.wParam);

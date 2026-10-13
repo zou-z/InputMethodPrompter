@@ -143,6 +143,10 @@ public:
         if (window->handle == nullptr)
             return std::unexpected(("Failed to create window, error code: " + std::to_string(GetLastError())));
 
+        auto result = window->OnInitialized();
+        if (result.has_value())
+            return std::unexpected(result.value());
+
         return windowInstance;
     }
 
@@ -205,12 +209,21 @@ protected:
         );
     }
 
+    virtual std::optional<std::string> OnInitialized()
+    {
+        return std::nullopt;
+    }
+
     virtual LRESULT OnWindowProcedure(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
         {
         case WM_DPICHANGED:
         {
+            auto oldDpi = dpi;
+            dpi = HIWORD(wParam);
+            OnDpiChanged(oldDpi, dpi);
+
             auto suggestedRect = (RECT*)lParam;
             GetBounds().SetBounds(
                 suggestedRect->left,
@@ -219,10 +232,13 @@ protected:
                 suggestedRect->bottom - suggestedRect->top
             );
 
-            auto oldDpi = dpi;
-            dpi = HIWORD(wParam);
-            OnDpiChanged(oldDpi, dpi);
-
+            break;
+        }
+        case WM_SIZE:
+        {
+            auto width = LOWORD(lParam);
+            auto height = HIWORD(lParam);
+            OnSizeChanged(width, height);
             break;
         }
         case WM_DESTROY:
@@ -238,6 +254,10 @@ protected:
     }
 
     virtual void OnDpiChanged(UINT oldDpi, UINT newDpi)
+    {
+    }
+
+    virtual void OnSizeChanged(UINT width, UINT height)
     {
     }
 

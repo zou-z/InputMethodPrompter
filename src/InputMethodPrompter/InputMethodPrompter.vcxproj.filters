@@ -1,97 +1,105 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="View">
-      <UniqueIdentifier>{bbdfaef0-8068-458a-8fb3-77023f7a0ad0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Core">
-      <UniqueIdentifier>{e920d659-bf2a-4897-b68b-4749a384b187}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="View\Window">
-      <UniqueIdentifier>{05ee50ea-979b-4400-b2af-68727b04cb2a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Utility">
-      <UniqueIdentifier>{4cab4e92-483b-4870-82a5-9f2179ac4e3f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\UIAutomation">
-      <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\InputMethod">
-      <UniqueIdentifier>{d4cd6a0b-c2fb-4b84-ae21-c2b9f6b6859e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Hook">
-      <UniqueIdentifier>{abf4cec5-d31d-4b45-b001-187629889782}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\RegistryKey">
-      <UniqueIdentifier>{9d50f5a7-afe5-4d22-839e-bd9ed22e119d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="View\Direct2D">
-      <UniqueIdentifier>{fe989589-1e10-48f1-b540-3e03834b6b92}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Tests">
       <UniqueIdentifier>{971eee3a-ef15-40b2-bb1f-e6ea81121ae9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Component">
       <UniqueIdentifier>{da1e3e79-d03b-4036-bdc6-1ea8142b5b64}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{a86912eb-4ab5-44a2-8dd0-b36bc8a74630}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy">
+      <UniqueIdentifier>{10dc3e59-f440-4ad7-a648-d2e97f3b33f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core">
+      <UniqueIdentifier>{e920d659-bf2a-4897-b68b-4749a384b187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\Utility">
+      <UniqueIdentifier>{4cab4e92-483b-4870-82a5-9f2179ac4e3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\UIAutomation">
+      <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\InputMethod">
+      <UniqueIdentifier>{d4cd6a0b-c2fb-4b84-ae21-c2b9f6b6859e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\Hook">
+      <UniqueIdentifier>{abf4cec5-d31d-4b45-b001-187629889782}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\RegistryKey">
+      <UniqueIdentifier>{9d50f5a7-afe5-4d22-839e-bd9ed22e119d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Legacy\View">
+      <UniqueIdentifier>{bbdfaef0-8068-458a-8fb3-77023f7a0ad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\View\Window">
+      <UniqueIdentifier>{05ee50ea-979b-4400-b2af-68727b04cb2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\View\Direct2D">
+      <UniqueIdentifier>{fe989589-1e10-48f1-b540-3e03834b6b92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="View">
+      <UniqueIdentifier>{80f9a9e1-96c3-41be-9146-ad9c2df976cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Application.ixx" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Prompter.ixx">
-      <Filter>Core</Filter>
+      <Filter>Legacy\Core</Filter>
     </ClCompile>
     <ClCompile Include="Window.ixx">
-      <Filter>View\Window</Filter>
+      <Filter>Legacy\View\Window</Filter>
     </ClCompile>
     <ClCompile Include="WindowExtensions.ixx">
-      <Filter>View\Window</Filter>
+      <Filter>Legacy\View\Window</Filter>
     </ClCompile>
     <ClCompile Include="PromptWindow.ixx">
-      <Filter>View</Filter>
+      <Filter>Legacy\View</Filter>
     </ClCompile>
     <ClCompile Include="Strings.ixx">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
     </ClCompile>
     <ClCompile Include="SingletonMessageBox.ixx">
-      <Filter>View\Window</Filter>
+      <Filter>Legacy\View\Window</Filter>
     </ClCompile>
     <ClCompile Include="TrayIcon.ixx">
-      <Filter>View</Filter>
+      <Filter>Legacy\View</Filter>
     </ClCompile>
     <ClCompile Include="DebouncedAction.ixx">
-      <Filter>Core\Utility</Filter>
+      <Filter>Legacy\Core\Utility</Filter>
     </ClCompile>
     <ClCompile Include="EditorRecognizer.ixx">
-      <Filter>Core\UIAutomation</Filter>
+      <Filter>Legacy\Core\UIAutomation</Filter>
     </ClCompile>
     <ClCompile Include="UiaWrapper.ixx">
-      <Filter>Core\UIAutomation</Filter>
+      <Filter>Legacy\Core\UIAutomation</Filter>
     </ClCompile>
     <ClCompile Include="InputMethodDetector.ixx">
-      <Filter>Core\InputMethod</Filter>
+      <Filter>Legacy\Core\InputMethod</Filter>
     </ClCompile>
     <ClCompile Include="KeyboardHook.ixx">
-      <Filter>Core\Hook</Filter>
+      <Filter>Legacy\Core\Hook</Filter>
     </ClCompile>
     <ClCompile Include="WinEventHook.ixx">
-      <Filter>Core\Hook</Filter>
+      <Filter>Legacy\Core\Hook</Filter>
     </ClCompile>
     <ClCompile Include="RegistryKey.ixx">
-      <Filter>Core\RegistryKey</Filter>
+      <Filter>Legacy\Core\RegistryKey</Filter>
     </ClCompile>
     <ClCompile Include="Direct2DRenderer.ixx">
-      <Filter>View\Direct2D</Filter>
+      <Filter>Legacy\View\Direct2D</Filter>
     </ClCompile>
     <ClCompile Include="SegoeFluentIcons.ixx">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
     </ClCompile>
     <ClCompile Include="PromptContentRenderer.ixx">
-      <Filter>View</Filter>
+      <Filter>Legacy\View</Filter>
     </ClCompile>
     <ClCompile Include="WindowTests.ixx">
       <Filter>Tests</Filter>
@@ -99,23 +107,38 @@
     <ClCompile Include="WindowComponent.ixx">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="RenderComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.ixx">
+      <Filter>Legacy</Filter>
+    </ClCompile>
+    <ClCompile Include="PromptWindowV2.ixx">
+      <Filter>View</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="InputMethodPrompter.ico">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
     </Image>
     <Image Include="InputMethodPrompter.png">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>Resources</Filter>
+      <Filter>Legacy\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Macros.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsTypes.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

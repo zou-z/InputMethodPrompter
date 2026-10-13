@@ -54,7 +54,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -70,7 +70,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Imm32.lib;dwmapi.lib;d3d11.lib;d2d1.lib;dcomp.lib;shlwapi.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -84,7 +84,9 @@
     <ClCompile Include="PromptContentRenderer.ixx" />
     <ClCompile Include="Prompter.ixx" />
     <ClCompile Include="PromptWindow.ixx" />
+    <ClCompile Include="PromptWindowV2.ixx" />
     <ClCompile Include="RegistryKey.ixx" />
+    <ClCompile Include="RenderComponent.ixx" />
     <ClCompile Include="SingletonMessageBox.ixx" />
     <ClCompile Include="Strings.ixx" />
     <ClCompile Include="SegoeFluentIcons.ixx" />
@@ -101,6 +103,8 @@
     <Image Include="InputMethodPrompter.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GraphicsTypes.h" />
+    <ClInclude Include="Macros.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
