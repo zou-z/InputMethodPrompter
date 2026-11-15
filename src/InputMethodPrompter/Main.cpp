@@ -1,14 +1,12 @@
 #include <windows.h>
 
-#define WINWODTESTS
-
+//#define WINWODTESTS
 
 #ifdef WINWODTESTS
 import WindowTests;
 #else
-import Application;
+import ApplicationV2;
 #endif
-
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -24,6 +22,6 @@ int APIENTRY wWinMain(
 #ifdef WINWODTESTS
     return WindowTests().RunTests(hInstance);
 #else
-    return Application(hInstance).Run();
+    return Application().Run(hInstance);
 #endif
 }

@@ -19,9 +19,6 @@
     <Filter Include="Legacy\Core\Utility">
       <UniqueIdentifier>{4cab4e92-483b-4870-82a5-9f2179ac4e3f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Legacy\Core\UIAutomation">
-      <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Legacy\Core\InputMethod">
       <UniqueIdentifier>{d4cd6a0b-c2fb-4b84-ae21-c2b9f6b6859e}</UniqueIdentifier>
     </Filter>
@@ -47,6 +44,18 @@
     <Filter Include="View">
       <UniqueIdentifier>{80f9a9e1-96c3-41be-9146-ad9c2df976cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Prompter">
+      <UniqueIdentifier>{b1ce580b-30a3-4f30-a319-68d201b62b9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Prompter\Tracker">
+      <UniqueIdentifier>{2b22973c-5ea1-4821-9153-bd61852dc47b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Prompter\Service">
+      <UniqueIdentifier>{19143bf0-0b26-4d2a-ae66-c71e04478aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Legacy\Core\UIAutomation">
+      <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -64,9 +73,6 @@
     </ClCompile>
     <ClCompile Include="Strings.ixx">
       <Filter>Legacy\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="SingletonMessageBox.ixx">
-      <Filter>Legacy\View\Window</Filter>
     </ClCompile>
     <ClCompile Include="TrayIcon.ixx">
       <Filter>Legacy\View</Filter>
@@ -115,6 +121,31 @@
     </ClCompile>
     <ClCompile Include="PromptWindowV2.ixx">
       <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationV2.ixx" />
+    <ClCompile Include="SingletonMessageBox.ixx">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="ReactiveComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="LogComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="PromptData.ixx">
+      <Filter>Prompter</Filter>
+    </ClCompile>
+    <ClCompile Include="AutomationComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="FocusedTextBoxTracker.ixx">
+      <Filter>Prompter\Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="TextBoxService.ixx">
+      <Filter>Prompter\Service</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

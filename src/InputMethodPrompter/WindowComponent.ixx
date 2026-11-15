@@ -4,7 +4,6 @@ export module WindowComponent;
 
 import std;
 
-
 export class WindowBounds
 {
 public:
@@ -78,8 +77,11 @@ public:
 
     WindowState& Show()
     {
-        ShowWindow(handle, SW_SHOWDEFAULT);
-        UpdateWindow(handle);
+        if (!IsShowing())
+        {
+            ShowWindow(handle, SW_SHOWDEFAULT);
+            UpdateWindow(handle);
+        }
         return *this;
     }
 
@@ -122,30 +124,43 @@ private:
 export class Window
 {
 public:
-    template<std::derived_from<Window> TWindow>
-    static std::expected<std::unique_ptr<TWindow>, std::string> Create(
+    enum class CreateWindowError
+    {
+        NullWndProc,
+        FailedToRegisterClass,
+        FailedToCreateWindow,
+    };
+
+    template<std::derived_from<Window> TWindow, typename... Args>
+    static std::expected<std::unique_ptr<TWindow>, CreateWindowError> Create(
         HINSTANCE instance,
         const std::wstring& title,
-        const std::wstring& className)
+        const std::wstring& className,
+        Args&&... args)
     {
-        struct WindowAccess :public TWindow {};
+        struct WindowAccess :public TWindow
+        {
+            WindowAccess(Args&&... args) :TWindow(std::forward<Args>(args)...)
+            {
+            }
+        };
 
-        auto windowInstance = std::unique_ptr<TWindow>(static_cast<TWindow*>(new WindowAccess()));
+        auto windowInstance = std::unique_ptr<TWindow>(
+            static_cast<TWindow*>(new WindowAccess(std::forward<Args>(args)...))
+        );
         auto window = static_cast<Window*>(windowInstance.get());
 
         auto windowClass = window->OnCreateWindowClassType(instance, className);
         if (windowClass.lpfnWndProc == nullptr)
-            return std::unexpected("Window procedure is not defined");
+            return std::unexpected(CreateWindowError::NullWndProc);
         if ((window->classAtom = RegisterClassExW(&windowClass)) == 0)
-            return std::unexpected(("Failed to register window class, error code: " + std::to_string(GetLastError())));
+            return std::unexpected(CreateWindowError::FailedToRegisterClass);
 
         window->handle = window->OnCreateWindow(instance, title, className);
         if (window->handle == nullptr)
-            return std::unexpected(("Failed to create window, error code: " + std::to_string(GetLastError())));
+            return std::unexpected(CreateWindowError::FailedToCreateWindow);
 
-        auto result = window->OnInitialized();
-        if (result.has_value())
-            return std::unexpected(result.value());
+        window->OnInitialized();
 
         return windowInstance;
     }
@@ -209,9 +224,8 @@ protected:
         );
     }
 
-    virtual std::optional<std::string> OnInitialized()
+    virtual void OnInitialized()
     {
-        return std::nullopt;
     }
 
     virtual LRESULT OnWindowProcedure(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)

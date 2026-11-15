@@ -75,22 +75,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.ixx" />
+    <ClCompile Include="ApplicationV2.ixx" />
     <ClCompile Include="DebouncedAction.ixx" />
     <ClCompile Include="Direct2DRenderer.ixx" />
     <ClCompile Include="EditorRecognizer.ixx" />
+    <ClCompile Include="EnumComponent.ixx" />
+    <ClCompile Include="FocusedTextBoxTracker.ixx" />
     <ClCompile Include="InputMethodDetector.ixx" />
     <ClCompile Include="KeyboardHook.ixx" />
+    <ClCompile Include="LogComponent.ixx" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PromptContentRenderer.ixx" />
+    <ClCompile Include="PromptData.ixx" />
     <ClCompile Include="Prompter.ixx" />
     <ClCompile Include="PromptWindow.ixx" />
     <ClCompile Include="PromptWindowV2.ixx" />
+    <ClCompile Include="ReactiveComponent.ixx" />
     <ClCompile Include="RegistryKey.ixx" />
     <ClCompile Include="RenderComponent.ixx" />
     <ClCompile Include="SingletonMessageBox.ixx" />
     <ClCompile Include="Strings.ixx" />
     <ClCompile Include="SegoeFluentIcons.ixx" />
+    <ClCompile Include="TextBoxService.ixx" />
     <ClCompile Include="TrayIcon.ixx" />
+    <ClCompile Include="AutomationComponent.ixx" />
     <ClCompile Include="UiaWrapper.ixx" />
     <ClCompile Include="Window.ixx" />
     <ClCompile Include="WindowExtensions.ixx" />

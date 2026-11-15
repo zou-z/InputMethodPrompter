@@ -1,11 +1,8 @@
 ﻿module;
-//#include <d2d1svg.h>
-//#include <Shlwapi.h>
 #include "Macros.h"
 #include "GraphicsTypes.h"
 #include <dwrite.h>
 export module RenderComponent;
-
 
 export struct RectF
 {

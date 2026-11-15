@@ -5,9 +5,17 @@
 export module PromptWindowV2;
 
 import std;
+import PromptData;
+import LogComponent;
 import WindowComponent;
 import RenderComponent;
+import ReactiveComponent;
+import EditorRecognizer;
+import AutomationComponent;
+import TextBoxService;
+import EnumComponent;
 
+using namespace Reactive;
 
 export enum class InputMethodState
 {
@@ -36,7 +44,7 @@ public:
     PromptRenderer(Window* window, GraphicsResources resources) :
         window(window),
         resources(std::move(resources)),
-        state({ .MethodState = InputMethodState::Unknown, .KeyboardState = {false} })
+        state({ .MethodState = InputMethodState::Unknown, .KeyboardState = { false } })
     {
     }
 
@@ -247,47 +255,28 @@ private:
 
 export class PromptWindow : public Window
 {
-public:
-    void SetInputMethodState(InputMethodState value) const
-    {
-        auto hr = renderer->SetInputMethodState(value);
-        if (FAILED(hr))
-        {
-            // show or log error
-        }
-    }
-
-    void SetIsNumLocked(bool value) const
-    {
-        auto hr = renderer->SetIsNumLocked(value);
-
-        // show or log error
-
-    }
-
-    void SetIsCapsLocked(bool value) const
-    {
-        auto hr = renderer->SetIsCapsLocked(value);
-
-        // show or log error
-
-    }
-
-    void SetIsScrollLocked(bool value) const
-    {
-        auto hr = renderer->SetIsScrollLocked(value);
-
-        // show or log error
-
-    }
-
 protected:
-    PromptWindow()
+    PromptWindow(
+        std::shared_ptr<ILog> log,
+        std::shared_ptr<IAutomation> automation,
+        std::shared_ptr<ITextBoxLocator> textBoxLocator,
+        std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox) :
+        log(std::move(log)),
+        automation(std::move(automation)),
+        textBoxLocator(std::move(textBoxLocator))
     {
+        if (auto textBox = focusedTextBox.lock())
+        {
+            textBoxSubscription = textBox->Subscribe([this](const auto& element)
+            {
+                OnFocusedTextBoxChanged(element);
+            });
+        }
     }
 
     WNDCLASSEXW OnCreateWindowClassType(HINSTANCE instance, const std::wstring& className) override
     {
+        constexpr int IDI_APPICON = 1;
         auto windowClass = Window::OnCreateWindowClassType(instance, className);
         windowClass.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_APPICON));
         windowClass.hIconSm = (HICON)LoadImage(instance, MAKEINTRESOURCE(IDI_APPICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
@@ -318,7 +307,7 @@ protected:
         return handle;
     }
 
-    std::optional<std::string> OnInitialized() override
+    void OnInitialized() override
     {
         int width = 0;
         int height = 0;
@@ -327,11 +316,12 @@ protected:
         GraphicsResources resources;
         auto hr = GraphicsInitializer::Create(GetState().GetHandle(), max(width, 1), max(height, 1), resources);
         if (FAILED(hr))
-            throw std::runtime_error("Init graphics failed, hr: " + std::to_string(hr));
+        {
+            log->Fatal("Failed to init graphics, hr: " + HResultToString(hr));
+            return;
+        }
 
         renderer = std::make_unique<PromptRenderer>(this, resources);
-
-        return std::nullopt;
     }
 
     void OnSizeChanged(UINT width, UINT height) override
@@ -340,10 +330,47 @@ protected:
             return;
 
         auto hr = renderer->Resize(width, height);
-        // show or log error
+        if (FAILED(hr))
+            log->Error("Failed to resize renderer, hr: " + HResultToString(hr));
     }
 
 private:
-    static constexpr int IDI_APPICON = 1;
+    void OnFocusedTextBoxChanged(const std::optional<TextBoxElement>& focusedTextBox)
+    {
+#pragma region MyRegion
+        auto hr = renderer->SetInputMethodState(InputMethodState::ChineseInputMode);
+#pragma endregion
+
+        // 按下按键
+        // 窗口或输入框焦点变更
+        // 窗口最大化/最小化
+
+        if (focusedTextBox.has_value())
+        {
+            RECT rect;
+            const auto& textBox = focusedTextBox.value();
+            if (textBoxLocator->GetPosition(automation.get(), textBox.Value.get(), textBox.Type, rect))
+            {
+                GetBounds().SetPosition(rect.left, rect.bottom);
+            }
+            else
+            {
+                log->Error(std::string("Failed to get position of ").append(GetEnumString(textBox.Type)));
+            }
+
+            GetState().Show();
+        }
+        else
+        {
+            GetState().Hide();
+        }
+    }
+
+private:
+    std::shared_ptr<ILog> log;
+    std::shared_ptr<IAutomation> automation;
+    std::shared_ptr<ITextBoxLocator> textBoxLocator;
     std::unique_ptr<PromptRenderer> renderer;
+    Subscription textBoxSubscription;
+    EditorRecognizerService editorRecognizerService;
 };
