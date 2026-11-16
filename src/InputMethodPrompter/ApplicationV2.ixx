@@ -87,6 +87,9 @@ private:
         auto path = GetFolderPath(fullPath);
         auto name = GetFileNameWithoutExtension(fullPath);
 
+        log = std::make_shared<Log>(path, name, LogLevel::Info);
+        textBoxService = std::make_shared<TextBoxService>();
+
         auto createAutomationResult = Automation::Create();
         if (!createAutomationResult.has_value())
         {
@@ -94,8 +97,6 @@ private:
             return false;
         }
         automation = std::move(createAutomationResult.value());
-
-        textBoxService = std::make_shared<TextBoxService>();
 
         auto createWindowResult = Window::Create<PromptWindow>(
             instance,
@@ -108,10 +109,7 @@ private:
         );
         if (!createWindowResult.has_value())
         {
-            log->Fatal(
-                std::string("Failed to create prompt window, error: ")
-                    .append(GetEnumString(createWindowResult.error()))
-            );
+            log->Fatal(std::string("Failed to create prompt window, error: ").append(GetEnumString(createWindowResult.error())));
             return false;
         }
         promptWindow = std::move(createWindowResult.value());

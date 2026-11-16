@@ -16,7 +16,6 @@ export struct TextBoxElement
     TextBoxType Type;
     HWND WindowHandle;
 
-    //bool operator==(const FocusedElement&) const = default;
     bool operator==(const TextBoxElement& other) const noexcept
     {
         return Value.get() == other.Value.get() && Type == other.Type && WindowHandle == other.WindowHandle;

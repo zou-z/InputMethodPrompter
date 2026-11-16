@@ -41,7 +41,14 @@ export namespace Reactive
     };
 
     template<typename T>
-    struct IPublisher
+    struct IValueSource
+    {
+        virtual ~IValueSource() = default;
+        virtual T Get() const = 0;
+    };
+
+    template<typename T>
+    struct IPublisher :virtual IValueSource<T>
     {
         virtual ~IPublisher() = default;
         virtual void Set(T value) = 0;
@@ -51,12 +58,11 @@ export namespace Reactive
     // 订阅者应禁用拷贝构造、拷贝赋值、移动构造、移动赋值，避免Observer中捕获的this被销毁后变成野指针
     // 如果触发通知操作和销毁订阅者操作不在同一线程，应确保先取消订阅再销毁订阅者
     template<typename T>
-    struct IObservable
+    struct IObservable :virtual IValueSource<T>
     {
         using Observer = std::function<void(const T&)>;
         virtual ~IObservable() = default;
         [[nodiscard]] virtual Subscription Subscribe(Observer observer, bool notifyImmediately = false) = 0;
-        virtual T Get() const = 0;
     };
 
     template<typename T>
@@ -89,13 +95,13 @@ export namespace Reactive
                 observer(value);
 
             std::weak_ptr<SubscriptionRegistry> weakRegistry = registry;
-            auto itor = registry->Observers.insert(registry->Observers.end(), std::move(observer));
-            return Subscription([weakRegistry, itor]()
+            auto iter = registry->Observers.insert(registry->Observers.end(), std::move(observer));
+            return Subscription([weakRegistry, iter]()
             {
                 if (auto registry = weakRegistry.lock())
                 {
                     std::lock_guard<std::mutex> lock(registry->Mutex);
-                    registry->Observers.erase(itor);
+                    registry->Observers.erase(iter);
                 }
             });
         }

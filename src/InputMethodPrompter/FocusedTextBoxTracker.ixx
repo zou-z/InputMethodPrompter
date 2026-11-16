@@ -44,6 +44,21 @@ private:
     {
         if (auto textBox = focusedTextBox.lock())
         {
+            auto currentElement = textBox->Get();
+            if (currentElement.has_value() && currentElement->Value)
+            {
+                BOOL areSame = FALSE;
+                auto hr = automation->CompareElements(element, currentElement->Value.get(), &areSame);
+                if (FAILED(hr))
+                {
+                    log->Error("Failed to compare elements, hr: " + HResultToString(hr));
+                    return;
+                }
+
+                if (areSame == TRUE)
+                    return;
+            }
+
             auto textBoxType = textBoxRecognizer->GetTextBoxType(element);
             if (textBoxType == TextBoxType::Unknown)
             {

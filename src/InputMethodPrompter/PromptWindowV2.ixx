@@ -10,33 +10,12 @@ import LogComponent;
 import WindowComponent;
 import RenderComponent;
 import ReactiveComponent;
-import EditorRecognizer;
 import AutomationComponent;
 import TextBoxService;
 import EnumComponent;
+import InputMethodDetectorV2;
 
 using namespace Reactive;
-
-export enum class InputMethodState
-{
-    Unknown,
-    EnglishKeyboard,
-    EnglishInputMode,
-    ChineseInputMode,
-};
-
-struct KeyboardState
-{
-    bool IsNumLocked;
-    bool IsCapsLocked;
-    bool IsScrollLocked;
-};
-
-struct InputState
-{
-    InputMethodState MethodState;
-    KeyboardState KeyboardState;
-};
 
 class PromptRenderer
 {
@@ -60,31 +39,10 @@ public:
         );
     }
 
-    HRESULT SetInputMethodState(InputMethodState value)
+    HRESULT RenderInputState(const InputState& state)
     {
-        RETURN_IF(state.MethodState == value, S_OK);
-        state.MethodState = value;
-        return Render();
-    }
-
-    HRESULT SetIsNumLocked(bool value)
-    {
-        RETURN_IF(state.KeyboardState.IsNumLocked == value, S_OK);
-        state.KeyboardState.IsNumLocked = value;
-        return Render();
-    }
-
-    HRESULT SetIsCapsLocked(bool value)
-    {
-        RETURN_IF(state.KeyboardState.IsCapsLocked == value, S_OK);
-        state.KeyboardState.IsCapsLocked = value;
-        return Render();
-    }
-
-    HRESULT SetIsScrollLocked(bool value)
-    {
-        RETURN_IF(state.KeyboardState.IsScrollLocked == value, S_OK);
-        state.KeyboardState.IsScrollLocked = value;
+        RETURN_IF(this->state == state, S_OK);
+        this->state = state;
         return Render();
     }
 
@@ -294,10 +252,7 @@ protected:
             className.c_str(),
             title.c_str(),
             dwStyle,
-            0,
-            0,
-            0,
-            0,
+            0, 0, 0, 0,
             nullptr,
             nullptr,
             instance,
@@ -337,18 +292,28 @@ protected:
 private:
     void OnFocusedTextBoxChanged(const std::optional<TextBoxElement>& focusedTextBox)
     {
-#pragma region MyRegion
-        auto hr = renderer->SetInputMethodState(InputMethodState::ChineseInputMode);
-#pragma endregion
-
         // 按下按键
         // 窗口或输入框焦点变更
         // 窗口最大化/最小化
 
         if (focusedTextBox.has_value())
         {
-            RECT rect;
             const auto& textBox = focusedTextBox.value();
+
+            InputState state;
+            auto errorCode = InputMethodDetector::GetInputState(textBox.WindowHandle, state);
+            if (errorCode == ERROR_SUCCESS)
+            {
+                auto hr = renderer->RenderInputState(state);
+                if (FAILED(hr))
+                    log->Error("Failed to render input state, hr: " + HResultToString(hr));
+            }
+            else
+            {
+                log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
+            }
+
+            RECT rect;
             if (textBoxLocator->GetPosition(automation.get(), textBox.Value.get(), textBox.Type, rect))
             {
                 GetBounds().SetPosition(rect.left, rect.bottom);
@@ -372,5 +337,4 @@ private:
     std::shared_ptr<ITextBoxLocator> textBoxLocator;
     std::unique_ptr<PromptRenderer> renderer;
     Subscription textBoxSubscription;
-    EditorRecognizerService editorRecognizerService;
 };

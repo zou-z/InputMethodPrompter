@@ -39,6 +39,11 @@ export struct IAutomation
     virtual HRESULT RegisterFocusChangedEvent(FocusChangedCallback callback) const = 0;
     virtual HRESULT UnregisterFocusChangedEvent() const = 0;
     virtual HWND GetWindowHandleOfElement(IUIAutomationElement* element) const = 0;
+    virtual HRESULT CompareElements(
+       IUIAutomationElement* element1,
+       IUIAutomationElement* element2,
+       BOOL* areSame
+    ) const = 0;
 };
 
 export class Automation :public IAutomation
@@ -64,18 +69,18 @@ public:
         return std::make_shared<Automation>(automation);
     }
 
-    HRESULT RegisterFocusChangedEvent(FocusChangedCallback callback) const
+    HRESULT RegisterFocusChangedEvent(FocusChangedCallback callback) const override
     {
         focusChangedHandler->SetFocusChangedCallback(callback);
         return automation->AddFocusChangedEventHandler(nullptr, focusChangedHandler.get());
     }
 
-    HRESULT UnregisterFocusChangedEvent() const
+    HRESULT UnregisterFocusChangedEvent() const override
     {
         return automation->RemoveFocusChangedEventHandler(focusChangedHandler.get());
     }
 
-    HWND GetWindowHandleOfElement(IUIAutomationElement* element) const
+    HWND GetWindowHandleOfElement(IUIAutomationElement* element) const override
     {
         HWND handle = nullptr;
         IUIAutomationElement* currentElement = element;
@@ -97,6 +102,14 @@ public:
         }
 
         return nullptr;
+    }
+
+    HRESULT CompareElements(
+        IUIAutomationElement* element1,
+        IUIAutomationElement* element2,
+        BOOL* areSame) const override
+    {
+        return automation->CompareElements(element1, element2, areSame);
     }
 
 private:

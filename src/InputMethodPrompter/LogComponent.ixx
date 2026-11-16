@@ -52,6 +52,9 @@ private:
     {
         if (isDebug)
         {
+            auto text = std::format("[{0}][{1}] {2}\n", GetCurrentLocalTime(), GetLevelText(level), message);
+            OutputDebugString(StringToWstring(text).c_str());
+
             if (level >= LogLevel::Error)
             {
                 auto title = std::format(L"{0} - {1}", StringToWstring(GetLevelText(level)), name);

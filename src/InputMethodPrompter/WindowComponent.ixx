@@ -108,10 +108,7 @@ public:
         SetWindowPos(
             handle,
             topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-            0,
-            0,
-            0,
-            0,
+            0, 0, 0, 0,
             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
         );
         return *this;
@@ -213,10 +210,7 @@ protected:
             className.c_str(),
             title.c_str(),
             WS_OVERLAPPEDWINDOW,
-            0,
-            0,
-            0,
-            0,
+            0, 0, 0, 0,
             nullptr,
             nullptr,
             instance,

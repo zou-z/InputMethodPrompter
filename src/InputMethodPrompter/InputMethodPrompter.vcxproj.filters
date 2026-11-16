@@ -56,6 +56,9 @@
     <Filter Include="Legacy\Core\UIAutomation">
       <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Prompter\InputMethod">
+      <UniqueIdentifier>{92db5adf-64a7-459c-bf3d-af3bdef4eb06}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -146,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="TextBoxService.ixx">
       <Filter>Prompter\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="InputMethodDetectorV2.ixx">
+      <Filter>Prompter\InputMethod</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
