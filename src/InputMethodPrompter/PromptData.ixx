@@ -22,12 +22,30 @@ export struct TextBoxElement
     }
 };
 
+export struct KeyEvent
+{
+    WPARAM Message;
+    KBDLLHOOKSTRUCT Data;
+
+    bool operator==(const KeyEvent& other) const noexcept
+    {
+        return Message == other.Message
+            && Data.vkCode == other.Data.vkCode
+            && Data.scanCode == other.Data.scanCode
+            && Data.flags == other.Data.flags
+            && Data.time == other.Data.time
+            && Data.dwExtraInfo == other.Data.time;
+    }
+};
+
 export struct PromptData
 {
     std::shared_ptr<Observable<std::optional<TextBoxElement>>> FocusedTextBox;
+    std::shared_ptr<Observable<std::optional<KeyEvent>>> KeyEvent;
 
-    PromptData()
+    PromptData() :
+        FocusedTextBox(std::make_shared<Observable<std::optional<TextBoxElement>>>(std::nullopt)),
+        KeyEvent(std::make_shared<Observable<std::optional<::KeyEvent>>>(std::nullopt))
     {
-        FocusedTextBox = std::make_shared<Observable<std::optional<TextBoxElement>>>(std::nullopt);
     }
 };

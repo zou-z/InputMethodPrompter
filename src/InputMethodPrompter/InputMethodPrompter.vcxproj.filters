@@ -153,6 +153,9 @@
     <ClCompile Include="InputMethodDetectorV2.ixx">
       <Filter>Prompter\InputMethod</Filter>
     </ClCompile>
+    <ClCompile Include="KeyboardTracker.ixx">
+      <Filter>Prompter\Tracker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="InputMethodPrompter.ico">

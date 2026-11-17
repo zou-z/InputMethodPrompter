@@ -13,6 +13,7 @@ import EnumComponent;
 import AutomationComponent;
 import FocusedTextBoxTracker;
 import TextBoxService;
+import KeyboardTracker;
 
 class SingletonMutex
 {
@@ -105,11 +106,13 @@ private:
             log,
             automation,
             textBoxService,
-            promptData.FocusedTextBox
+            promptData.FocusedTextBox,
+            promptData.KeyEvent
         );
         if (!createWindowResult.has_value())
         {
-            log->Fatal(std::string("Failed to create prompt window, error: ").append(GetEnumString(createWindowResult.error())));
+            log->Fatal(std::string("Failed to create prompt window, error: ")
+                .append(GetEnumString(createWindowResult.error())));
             return false;
         }
         promptWindow = std::move(createWindowResult.value());
@@ -124,7 +127,15 @@ private:
         auto hr = focusedTextBoxTracker->Start();
         if (FAILED(hr))
         {
-            log->Fatal("Failed to start prompter, hr: " + HResultToString(hr));
+            log->Fatal("Failed to start focused textbox tracker, hr: " + HResultToString(hr));
+            return false;
+        }
+
+        keyboardTracker = std::make_unique<KeyboardTracker>(promptData.KeyEvent);
+        auto errorCode = keyboardTracker->Start(instance);
+        if (errorCode != ERROR_SUCCESS)
+        {
+            log->Fatal("Failed to statrt keyboard tracker, error code: " + std::to_string(errorCode));
             return false;
         }
 
@@ -170,4 +181,5 @@ private:
     std::unique_ptr<PromptWindow> promptWindow;
     std::shared_ptr<TextBoxService> textBoxService;
     std::unique_ptr<FocusedTextBoxTracker> focusedTextBoxTracker;
+    std::unique_ptr<KeyboardTracker> keyboardTracker;
 };

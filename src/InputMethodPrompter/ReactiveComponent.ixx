@@ -65,6 +65,7 @@ export namespace Reactive
         [[nodiscard]] virtual Subscription Subscribe(Observer observer, bool notifyImmediately = false) = 0;
     };
 
+    // 类型T需要实现==操作符
     template<typename T>
     class Observable :public IObservable<T>, public IPublisher<T>
     {

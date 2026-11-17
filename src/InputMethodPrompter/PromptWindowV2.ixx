@@ -218,16 +218,25 @@ protected:
         std::shared_ptr<ILog> log,
         std::shared_ptr<IAutomation> automation,
         std::shared_ptr<ITextBoxLocator> textBoxLocator,
-        std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox) :
+        std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox,
+        std::weak_ptr<IObservable<std::optional<KeyEvent>>> keyEvent) :
         log(std::move(log)),
         automation(std::move(automation)),
-        textBoxLocator(std::move(textBoxLocator))
+        textBoxLocator(std::move(textBoxLocator)),
+        focusedTextBox(std::move(focusedTextBox))
     {
-        if (auto textBox = focusedTextBox.lock())
+        if (auto textBox = this->focusedTextBox.lock())
         {
             textBoxSubscription = textBox->Subscribe([this](const auto& element)
             {
                 OnFocusedTextBoxChanged(element);
+            });
+        }
+        if (auto key = keyEvent.lock())
+        {
+            keyEventSubscription = key->Subscribe([this](const auto& keyEvent)
+            {
+                OnKeyEventChanged(keyEvent);
             });
         }
     }
@@ -300,18 +309,7 @@ private:
         {
             const auto& textBox = focusedTextBox.value();
 
-            InputState state;
-            auto errorCode = InputMethodDetector::GetInputState(textBox.WindowHandle, state);
-            if (errorCode == ERROR_SUCCESS)
-            {
-                auto hr = renderer->RenderInputState(state);
-                if (FAILED(hr))
-                    log->Error("Failed to render input state, hr: " + HResultToString(hr));
-            }
-            else
-            {
-                log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
-            }
+            UpdateInputState(textBox.WindowHandle);
 
             RECT rect;
             if (textBoxLocator->GetPosition(automation.get(), textBox.Value.get(), textBox.Type, rect))
@@ -331,10 +329,69 @@ private:
         }
     }
 
+    void OnKeyEventChanged(const std::optional<KeyEvent>& keyEvent)
+    {
+        if (!keyEvent.has_value() || !GetState().IsShowing())
+            return;
+
+        if (keyEvent->Message == WM_KEYUP || keyEvent->Message == WM_SYSKEYUP)
+        {
+            auto isShiftReleased = keyEvent->Data.vkCode == VK_SHIFT
+                || keyEvent->Data.vkCode == VK_LSHIFT
+                || keyEvent->Data.vkCode == VK_RSHIFT;
+            auto isSpaceReleased = keyEvent->Data.vkCode == VK_SPACE;
+
+            auto isSpacePressed = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
+            auto isCtrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0
+                || (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0
+                || (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
+            auto isWinPressed = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
+
+            // Shift松开
+            // Ctrl按下+Space松开，Ctrl按下+Space按下
+            // Win按下+Space松开，Win按下+Space按下
+            if (isShiftReleased
+                || isCtrlPressed && isSpaceReleased || isCtrlPressed && isSpacePressed
+                || isWinPressed && isSpaceReleased || isWinPressed && isSpacePressed)
+            {
+                if (auto textBox = focusedTextBox.lock())
+                {
+                    auto textBoxElement = textBox->Get();
+                    if (textBoxElement.has_value())
+                        UpdateInputState(textBoxElement->WindowHandle);
+                }
+            }
+        }
+    }
+
+    void UpdateInputState(HWND windowHandle)
+    {
+        if (windowHandle == nullptr)
+            return;
+
+        if (auto textBox = focusedTextBox.lock())
+        {
+            InputState state;
+            auto errorCode = InputMethodDetector::GetInputState(windowHandle, state);
+            if (errorCode == ERROR_SUCCESS)
+            {
+                auto hr = renderer->RenderInputState(state);
+                if (FAILED(hr))
+                    log->Error("Failed to render input state, hr: " + HResultToString(hr));
+            }
+            else
+            {
+                log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
+            }
+        }
+    }
+
 private:
     std::shared_ptr<ILog> log;
     std::shared_ptr<IAutomation> automation;
     std::shared_ptr<ITextBoxLocator> textBoxLocator;
     std::unique_ptr<PromptRenderer> renderer;
+    std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox;
     Subscription textBoxSubscription;
+    Subscription keyEventSubscription;
 };

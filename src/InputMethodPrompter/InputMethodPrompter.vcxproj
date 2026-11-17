@@ -84,6 +84,7 @@
     <ClCompile Include="InputMethodDetector.ixx" />
     <ClCompile Include="InputMethodDetectorV2.ixx" />
     <ClCompile Include="KeyboardHook.ixx" />
+    <ClCompile Include="KeyboardTracker.ixx" />
     <ClCompile Include="LogComponent.ixx" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PromptContentRenderer.ixx" />
