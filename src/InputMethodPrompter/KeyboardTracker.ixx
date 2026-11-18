@@ -4,6 +4,7 @@ export module KeyboardTracker;
 
 import std;
 import PromptData;
+import LogComponent;
 import ReactiveComponent;
 
 using namespace Reactive;
@@ -58,8 +59,11 @@ private:
 export class KeyboardTracker
 {
 public:
-    KeyboardTracker(std::weak_ptr<IPublisher<std::optional<KeyEvent>>> keyEvent) :
-        keyEvent(keyEvent)
+    KeyboardTracker(
+        std::shared_ptr<ILog> log,
+        std::weak_ptr<IPublisher<DWORD>> releasedVirtualKeyCode) :
+        log(std::move(log)),
+        releasedVirtualKeyCode(releasedVirtualKeyCode)
     {
     }
 
@@ -79,16 +83,18 @@ public:
 private:
     void OnKeyEvent(WPARAM wParam, LPARAM lParam)
     {
-        if (auto key = keyEvent.lock())
+        if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
         {
-            key->Set(KeyEvent
+            if (auto virtualKeyCode = releasedVirtualKeyCode.lock())
             {
-                .Message = wParam,
-                .Data = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam),
-            });
+                auto keyboardStruct = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
+                if (!virtualKeyCode->Set(keyboardStruct->vkCode))
+                    log->Error("Failed to set key event");
+            }
         }
     }
 
 private:
-    std::weak_ptr<IPublisher<std::optional<KeyEvent>>> keyEvent;
+    std::shared_ptr<ILog> log;
+    std::weak_ptr<IPublisher<DWORD>> releasedVirtualKeyCode;
 };

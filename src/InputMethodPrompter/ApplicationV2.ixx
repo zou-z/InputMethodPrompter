@@ -107,7 +107,7 @@ private:
             automation,
             textBoxService,
             promptData.FocusedTextBox,
-            promptData.KeyEvent
+            promptData.ReleasedVirtualKeyCode
         );
         if (!createWindowResult.has_value())
         {
@@ -131,7 +131,7 @@ private:
             return false;
         }
 
-        keyboardTracker = std::make_unique<KeyboardTracker>(promptData.KeyEvent);
+        keyboardTracker = std::make_unique<KeyboardTracker>(log, promptData.ReleasedVirtualKeyCode);
         auto errorCode = keyboardTracker->Start(instance);
         if (errorCode != ERROR_SUCCESS)
         {

@@ -14,6 +14,7 @@ import AutomationComponent;
 import TextBoxService;
 import EnumComponent;
 import InputMethodDetectorV2;
+import ConflationComponent;
 
 using namespace Reactive;
 
@@ -219,24 +220,26 @@ protected:
         std::shared_ptr<IAutomation> automation,
         std::shared_ptr<ITextBoxLocator> textBoxLocator,
         std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox,
-        std::weak_ptr<IObservable<std::optional<KeyEvent>>> keyEvent) :
+        std::weak_ptr<IObservable<DWORD>> releasedVirtualKeyCode) :
         log(std::move(log)),
         automation(std::move(automation)),
         textBoxLocator(std::move(textBoxLocator)),
-        focusedTextBox(std::move(focusedTextBox))
+        focusedTextBox(std::move(focusedTextBox)),
+        textBoxProcessor([this](const auto& value) { OnFocusedTextBoxChanged(value); }),
+        virtualKeyCodeProcessor([this](const auto& value) { OnReleasedKeyChanged(value); })
     {
         if (auto textBox = this->focusedTextBox.lock())
         {
             textBoxSubscription = textBox->Subscribe([this](const auto& element)
             {
-                OnFocusedTextBoxChanged(element);
+                textBoxProcessor.Submit(element);
             });
         }
-        if (auto key = keyEvent.lock())
+        if (auto virtualKeyCode = releasedVirtualKeyCode.lock())
         {
-            keyEventSubscription = key->Subscribe([this](const auto& keyEvent)
+            releasedVirtualKeyCodeSubscription = virtualKeyCode->Subscribe([this](const auto& code)
             {
-                OnKeyEventChanged(keyEvent);
+                virtualKeyCodeProcessor.Submit(code);
             });
         }
     }
@@ -299,28 +302,17 @@ protected:
     }
 
 private:
+    // 按下按键
+    // 窗口或输入框焦点变更
+    // 窗口尺寸变更，位置变更，最大化/最小化
+
     void OnFocusedTextBoxChanged(const std::optional<TextBoxElement>& focusedTextBox)
     {
-        // 按下按键
-        // 窗口或输入框焦点变更
-        // 窗口最大化/最小化
-
         if (focusedTextBox.has_value())
         {
             const auto& textBox = focusedTextBox.value();
-
-            UpdateInputState(textBox.WindowHandle);
-
-            RECT rect;
-            if (textBoxLocator->GetPosition(automation.get(), textBox.Value.get(), textBox.Type, rect))
-            {
-                GetBounds().SetPosition(rect.left, rect.bottom);
-            }
-            else
-            {
-                log->Error(std::string("Failed to get position of ").append(GetEnumString(textBox.Type)));
-            }
-
+            UpdateInputStateContent(textBox.WindowHandle, false);
+            UpdateWindowPosition(textBox);
             GetState().Show();
         }
         else
@@ -329,61 +321,108 @@ private:
         }
     }
 
-    void OnKeyEventChanged(const std::optional<KeyEvent>& keyEvent)
+    void OnReleasedKeyChanged(const DWORD& virtualKeyCode)
     {
-        if (!keyEvent.has_value() || !GetState().IsShowing())
+        if (virtualKeyCode == 0 || !GetState().IsShowing())
             return;
 
-        if (keyEvent->Message == WM_KEYUP || keyEvent->Message == WM_SYSKEYUP)
+        if (IsLockKeysReleased(virtualKeyCode) || IsInputMethodSwitchKeysReleased(virtualKeyCode))
         {
-            auto isShiftReleased = keyEvent->Data.vkCode == VK_SHIFT
-                || keyEvent->Data.vkCode == VK_LSHIFT
-                || keyEvent->Data.vkCode == VK_RSHIFT;
-            auto isSpaceReleased = keyEvent->Data.vkCode == VK_SPACE;
-
-            auto isSpacePressed = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
-            auto isCtrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0
-                || (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0
-                || (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
-            auto isWinPressed = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
-
-            // Shift松开
-            // Ctrl按下+Space松开，Ctrl按下+Space按下
-            // Win按下+Space松开，Win按下+Space按下
-            if (isShiftReleased
-                || isCtrlPressed && isSpaceReleased || isCtrlPressed && isSpacePressed
-                || isWinPressed && isSpaceReleased || isWinPressed && isSpacePressed)
+            if (auto textBox = focusedTextBox.lock())
             {
-                if (auto textBox = focusedTextBox.lock())
+                const auto& textBoxElement = textBox->Get();
+                if (textBoxElement.has_value())
+                    UpdateInputStateContent(textBoxElement->WindowHandle, true);
+            }
+        }
+        else if (IsControlKeyReleased(virtualKeyCode))
+        {
+            if (auto textBox = focusedTextBox.lock())
+            {
+                const auto& textBoxElement = textBox->Get();
+                if (textBoxElement.has_value())
                 {
-                    auto textBoxElement = textBox->Get();
-                    if (textBoxElement.has_value())
-                        UpdateInputState(textBoxElement->WindowHandle);
+                    bool isFocused = false;
+                    auto hr = AutomationOperation::HasKeyboardFocus(textBoxElement.value().Value.get(), isFocused);
+                    if (FAILED(hr))
+                    {
+                        log->Error("Failed to get keyboard focus state, hr: " + HResultToString(hr));
+                    }
+                    else
+                    {
+                        if (isFocused)
+                            UpdateWindowPosition(textBoxElement.value());
+                        else
+                            GetState().Hide();
+                    }
                 }
             }
         }
     }
 
-    void UpdateInputState(HWND windowHandle)
+    void UpdateInputStateContent(HWND windowHandle, bool isDeferred)
     {
         if (windowHandle == nullptr)
             return;
 
-        if (auto textBox = focusedTextBox.lock())
+        if (isDeferred)
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+        InputState state;
+        auto errorCode = InputMethodDetector::GetInputState(windowHandle, state);
+        if (errorCode == ERROR_SUCCESS)
         {
-            InputState state;
-            auto errorCode = InputMethodDetector::GetInputState(windowHandle, state);
-            if (errorCode == ERROR_SUCCESS)
-            {
-                auto hr = renderer->RenderInputState(state);
-                if (FAILED(hr))
-                    log->Error("Failed to render input state, hr: " + HResultToString(hr));
-            }
-            else
-            {
-                log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
-            }
+            auto hr = renderer->RenderInputState(state);
+            if (FAILED(hr))
+                log->Error("Failed to render input state, hr: " + HResultToString(hr));
         }
+        else
+        {
+            log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
+        }
+    }
+
+    void UpdateWindowPosition(const TextBoxElement& textBoxElement)
+    {
+        RECT rect;
+        if (textBoxLocator->GetPosition(automation.get(), textBoxElement.Value.get(), textBoxElement.Type, rect))
+        {
+            GetBounds().SetPosition(rect.left, rect.bottom);
+        }
+        else
+        {
+            log->Error(std::string("Failed to get position of ").append(GetEnumString(textBoxElement.Type)));
+        }
+    }
+
+    static bool IsInputMethodSwitchKeysReleased(DWORD virtualKeyCode)
+    {
+        auto isShiftReleased = virtualKeyCode == VK_SHIFT
+            || virtualKeyCode == VK_LSHIFT
+            || virtualKeyCode == VK_RSHIFT;
+        auto isSpaceReleased = virtualKeyCode == VK_SPACE;
+
+        auto isSpacePressed = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
+        auto isCtrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0
+            || (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0
+            || (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
+        auto isWinPressed = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
+
+        return isShiftReleased                     // Shift松开
+            || isCtrlPressed && isSpaceReleased    // Ctrl按下+Space松开
+            || isCtrlPressed && isSpacePressed     // Ctrl按下+Space按下
+            || isWinPressed && isSpaceReleased     // Win按下+Space松开
+            || isWinPressed && isSpacePressed;     // Win按下+Space按下
+    }
+
+    static bool IsLockKeysReleased(DWORD virtualKeyCode)
+    {
+        return virtualKeyCode == VK_NUMLOCK || virtualKeyCode == VK_CAPITAL || virtualKeyCode == VK_SCROLL;
+    }
+
+    static bool IsControlKeyReleased(DWORD virtualKeyCode)
+    {
+        return virtualKeyCode == VK_ESCAPE || virtualKeyCode == VK_RETURN;
     }
 
 private:
@@ -392,6 +431,8 @@ private:
     std::shared_ptr<ITextBoxLocator> textBoxLocator;
     std::unique_ptr<PromptRenderer> renderer;
     std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox;
+    ConflatingProcessor<std::optional<TextBoxElement>> textBoxProcessor;
+    ConflatingProcessor<DWORD> virtualKeyCodeProcessor;
     Subscription textBoxSubscription;
-    Subscription keyEventSubscription;
+    Subscription releasedVirtualKeyCodeSubscription;
 };

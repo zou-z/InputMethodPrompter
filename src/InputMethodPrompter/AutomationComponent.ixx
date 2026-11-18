@@ -150,6 +150,14 @@ public:
         return GetElementProperty(element, &IUIAutomationElement::get_CurrentFrameworkId);
     }
 
+    static HRESULT HasKeyboardFocus(IUIAutomationElement* element, bool& value)
+    {
+        BOOL result = FALSE;
+        auto hr = element->get_CurrentHasKeyboardFocus(&result);
+        value = result == TRUE;
+        return hr;
+    }
+
 private:
     template<typename TType, typename TGetterFunc>
     static std::wstring GetElementProperty(TType* element, TGetterFunc getter)

@@ -156,6 +156,9 @@
     <ClCompile Include="KeyboardTracker.ixx">
       <Filter>Prompter\Tracker</Filter>
     </ClCompile>
+    <ClCompile Include="ConflationComponent.ixx">
+      <Filter>Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="InputMethodPrompter.ico">

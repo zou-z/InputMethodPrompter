@@ -51,7 +51,7 @@ export namespace Reactive
     struct IPublisher :virtual IValueSource<T>
     {
         virtual ~IPublisher() = default;
-        virtual void Set(T value) = 0;
+        virtual bool Set(T value) = 0;
         virtual void Notify() = 0;
     };
 
@@ -72,8 +72,9 @@ export namespace Reactive
     public:
         using Observer = std::function<void(const T&)>;
 
-        explicit Observable(T initialValue) :
+        explicit Observable(T initialValue, bool notifyOnSameValue = false) :
             value(std::move(initialValue)),
+            notifyOnSameValue(notifyOnSameValue),
             registry(std::make_shared<SubscriptionRegistry>())
         {
         }
@@ -82,18 +83,20 @@ export namespace Reactive
         Observable(Observable&&) = delete;
         Observable& operator=(Observable&&) = delete;
 
-        // 回调内不要调用此对象的所有public函数以及Unsubscribe否则会死锁
-        // 回调内不能销毁、重新赋值订阅句柄，因为它们也会自动取消订阅、重复加锁
-        // 回调内抛出异常会中止本轮剩余通知，已经更新的值不会回滚
-        [[nodiscard]] Subscription Subscribe(Observer observer, bool notifyImmediately = false) override
+        [[nodiscard]]
+        Subscription Subscribe(Observer observer, bool notifyImmediately = false) override
         {
             if (observer == nullptr)
                 return {};
 
-            std::lock_guard<std::mutex> lock(registry->Mutex);
+            std::lock_guard<std::recursive_mutex> lock(registry->Mutex);
 
-            if (notifyImmediately)
+            if (notifyImmediately && notifyingCount == 0)
+            {
+                ++notifyingCount;
                 observer(value);
+                --notifyingCount;
+            }
 
             std::weak_ptr<SubscriptionRegistry> weakRegistry = registry;
             auto iter = registry->Observers.insert(registry->Observers.end(), std::move(observer));
@@ -101,7 +104,7 @@ export namespace Reactive
             {
                 if (auto registry = weakRegistry.lock())
                 {
-                    std::lock_guard<std::mutex> lock(registry->Mutex);
+                    std::lock_guard<std::recursive_mutex> lock(registry->Mutex);
                     registry->Observers.erase(iter);
                 }
             });
@@ -109,43 +112,53 @@ export namespace Reactive
 
         T Get() const override
         {
-            std::lock_guard<std::mutex> lock(registry->Mutex);
+            std::lock_guard<std::recursive_mutex> lock(registry->Mutex);
             return value;
         }
 
-        void Set(T value) override
+        bool Set(T value) override
         {
-            std::lock_guard<std::mutex> lock(registry->Mutex);
-            if (this->value != value)
+            std::lock_guard<std::recursive_mutex> lock(registry->Mutex);
+            if (notifyingCount > 0)
+                return false;
+
+            if (notifyOnSameValue || this->value != value)
             {
                 this->value = std::move(value);
                 NotifySubscribers();
             }
+            return true;
         }
 
         void Notify() override
         {
-            std::lock_guard<std::mutex> lock(registry->Mutex);
-            NotifySubscribers();
+            std::lock_guard<std::recursive_mutex> lock(registry->Mutex);
+            if (notifyingCount == 0)
+                NotifySubscribers();
         }
 
     private:
         void NotifySubscribers()
         {
-            for (const auto& observer : registry->Observers)
+            ++notifyingCount;
+            auto observers = registry->Observers;
+            for (const auto& observer : observers)
             {
                 observer(value);
             }
+            --notifyingCount;
         }
 
     private:
         struct SubscriptionRegistry
         {
-            std::mutex Mutex;
+            std::recursive_mutex Mutex;
             std::list<Observer> Observers;
         };
 
         T value;
+        bool notifyOnSameValue;
+        int notifyingCount = 0;
         std::shared_ptr<SubscriptionRegistry> registry;
     };
 }

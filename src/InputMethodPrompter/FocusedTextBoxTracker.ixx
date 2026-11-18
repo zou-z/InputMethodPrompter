@@ -62,7 +62,8 @@ private:
             auto textBoxType = textBoxRecognizer->GetTextBoxType(element);
             if (textBoxType == TextBoxType::Unknown)
             {
-                textBox->Set(std::nullopt);
+                if (!textBox->Set(std::nullopt))
+                    log->Error("Failed to set text box type");
                 return;
             }
 
@@ -75,7 +76,8 @@ private:
                     .WindowHandle = handle
                 };
                 focusedElement.Value.copy_from(element);
-                textBox->Set(focusedElement);
+                if (!textBox->Set(focusedElement))
+                    log->Error("Failed to set text box type");
             }
             else
             {
