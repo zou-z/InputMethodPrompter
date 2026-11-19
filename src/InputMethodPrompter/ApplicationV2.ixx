@@ -15,6 +15,7 @@ import FocusedTextBoxTracker;
 import TextBoxService;
 import KeyboardTracker;
 import WindowStateTracker;
+import TrayIconV2;
 
 class SingletonMutex
 {
@@ -145,7 +146,20 @@ private:
         errorCode = windowStateTracker->Start();
         if (errorCode != ERROR_SUCCESS)
         {
-            log->Error("Failed to start window state tracker, error code: " + std::to_string(errorCode));
+            log->Fatal("Failed to start window state tracker, error code: " + std::to_string(errorCode));
+            return false;
+        }
+
+        auto createTrayIconResult = TrayIcon::Create(instance, log, std::wstring(applicationName));
+        if (!createTrayIconResult.has_value())
+        {
+            log->Fatal("Failed to create tray icon, error code: " + std::to_string(createTrayIconResult.error()));
+            return false;
+        }
+        trayIcon = std::move(createTrayIconResult.value());
+        if (!trayIcon->Show())
+        {
+            log->Fatal("Failed to show tray icon");
             return false;
         }
 
@@ -185,6 +199,8 @@ private:
     }
 
 private:
+    static constexpr std::wstring_view applicationName = L"InputMethodPrompter";
+
     PromptData promptData;
     std::shared_ptr<Log> log;
     std::shared_ptr<Automation> automation;
@@ -193,4 +209,5 @@ private:
     std::unique_ptr<FocusedTextBoxTracker> focusedTextBoxTracker;
     std::unique_ptr<KeyboardTracker> keyboardTracker;
     std::unique_ptr<WindowStateTracker> windowStateTracker;
+    std::unique_ptr<TrayIcon> trayIcon;
 };

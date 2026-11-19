@@ -95,13 +95,16 @@
     <ClCompile Include="PromptWindowV2.ixx" />
     <ClCompile Include="ReactiveComponent.ixx" />
     <ClCompile Include="RegistryKey.ixx" />
+    <ClCompile Include="RegistryService.ixx" />
     <ClCompile Include="RenderComponent.ixx" />
     <ClCompile Include="SingletonMessageBox.ixx" />
     <ClCompile Include="Strings.ixx" />
     <ClCompile Include="SegoeFluentIcons.ixx" />
+    <ClCompile Include="StringsV2.ixx" />
     <ClCompile Include="TextBoxService.ixx" />
     <ClCompile Include="TrayIcon.ixx" />
     <ClCompile Include="AutomationComponent.ixx" />
+    <ClCompile Include="TrayIconV2.ixx" />
     <ClCompile Include="UiaWrapper.ixx" />
     <ClCompile Include="Window.ixx" />
     <ClCompile Include="WindowExtensions.ixx" />

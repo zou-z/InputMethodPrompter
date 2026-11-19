@@ -56,6 +56,9 @@
     <Filter Include="Legacy\Core\UIAutomation">
       <UniqueIdentifier>{15cc89af-f04d-466b-b4a9-dcd88bc3c51d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{d00103b2-5ae4-4cf2-ab38-93ebc077e6e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -158,6 +161,15 @@
     </ClCompile>
     <ClCompile Include="InputMethodService.ixx">
       <Filter>Prompter\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistryService.ixx">
+      <Filter>Prompter\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="StringsV2.ixx">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="TrayIconV2.ixx">
+      <Filter>View</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
