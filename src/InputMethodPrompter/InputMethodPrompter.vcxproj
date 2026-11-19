@@ -83,7 +83,7 @@
     <ClCompile Include="EnumComponent.ixx" />
     <ClCompile Include="FocusedTextBoxTracker.ixx" />
     <ClCompile Include="InputMethodDetector.ixx" />
-    <ClCompile Include="InputMethodDetectorV2.ixx" />
+    <ClCompile Include="InputMethodService.ixx" />
     <ClCompile Include="KeyboardHook.ixx" />
     <ClCompile Include="KeyboardTracker.ixx" />
     <ClCompile Include="LogComponent.ixx" />

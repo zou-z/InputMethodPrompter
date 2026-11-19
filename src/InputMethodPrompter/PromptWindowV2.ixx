@@ -13,7 +13,7 @@ import ReactiveComponent;
 import AutomationComponent;
 import TextBoxService;
 import EnumComponent;
-import InputMethodDetectorV2;
+import InputMethodService;
 import ConflationComponent;
 
 using namespace Reactive;

@@ -1,7 +1,7 @@
 module;
 #include <Windows.h>
 #include <imm.h>
-export module InputMethodDetectorV2;
+export module InputMethodService;
 
 export enum class InputMethodState
 {
