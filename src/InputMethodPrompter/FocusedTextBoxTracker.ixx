@@ -51,7 +51,7 @@ private:
                 auto hr = automation->CompareElements(element, currentElement->Value.get(), &areSame);
                 if (FAILED(hr))
                 {
-                    log->Error("Failed to compare elements, hr: " + HResultToString(hr));
+                    FastLog::HRESULT::Error(log, "Failed to compare elements", hr);
                     return;
                 }
 

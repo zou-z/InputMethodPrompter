@@ -293,7 +293,7 @@ protected:
         auto hr = GraphicsInitializer::Create(GetState().GetHandle(), max(width, 1), max(height, 1), resources);
         if (FAILED(hr))
         {
-            log->Fatal("Failed to init graphics, hr: " + HResultToString(hr));
+            FastLog::HRESULT::Fatal(log, "Failed to init graphics", hr);
             return;
         }
 
@@ -307,7 +307,7 @@ protected:
 
         auto hr = renderer->Resize(width, height);
         if (FAILED(hr))
-            log->Error("Failed to resize renderer, hr: " + HResultToString(hr));
+            FastLog::HRESULT::Error(log, "Failed to resize renderer", hr);
     }
 
 private:
@@ -351,7 +351,7 @@ private:
                     auto hr = AutomationOperation::HasKeyboardFocus(textBoxElement.value().Value.get(), isFocused);
                     if (FAILED(hr))
                     {
-                        log->Error("Failed to get keyboard focus state, hr: " + HResultToString(hr));
+                        FastLog::HRESULT::Error(log, "Failed to get keyboard focus state", hr);
                     }
                     else
                     {
@@ -392,11 +392,11 @@ private:
         {
             auto hr = renderer->RenderInputState(state);
             if (FAILED(hr))
-                log->Error("Failed to render input state, hr: " + HResultToString(hr));
+                FastLog::HRESULT::Error(log, "Failed to render input state", hr);
         }
         else
         {
-            log->Error("Failed to get input state, error code: " + std::to_string(errorCode));
+            FastLog::Win32::Error(log, "Failed to get input state", errorCode);
         }
     }
 

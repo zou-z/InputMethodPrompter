@@ -90,13 +90,13 @@ private:
         auto path = GetFolderPath(fullPath);
         auto name = GetFileNameWithoutExtension(fullPath);
 
-        log = std::make_shared<Log>(path, name, LogLevel::Info);
+        log = std::make_shared<Log>(path, name, Log::LogLevel::Info);
         textBoxService = std::make_shared<TextBoxService>();
 
         auto createAutomationResult = Automation::Create();
         if (!createAutomationResult.has_value())
         {
-            log->Fatal("Failed to create automation, hr" + HResultToString(createAutomationResult.error()));
+            FastLog::HRESULT::Fatal(log, "Failed to create automation", createAutomationResult.error());
             return false;
         }
         automation = std::move(createAutomationResult.value());
@@ -130,7 +130,7 @@ private:
         auto hr = focusedTextBoxTracker->Start();
         if (FAILED(hr))
         {
-            log->Fatal("Failed to start focused textbox tracker, hr: " + HResultToString(hr));
+            FastLog::HRESULT::Fatal(log, "Failed to start focused textbox tracker", hr);
             return false;
         }
 
@@ -138,7 +138,7 @@ private:
         auto errorCode = keyboardTracker->Start(instance);
         if (errorCode != ERROR_SUCCESS)
         {
-            log->Fatal("Failed to statrt keyboard tracker, error code: " + std::to_string(errorCode));
+            FastLog::Win32::Fatal(log, "Failed to statrt keyboard tracker", errorCode);
             return false;
         }
 
@@ -146,14 +146,14 @@ private:
         errorCode = windowStateTracker->Start();
         if (errorCode != ERROR_SUCCESS)
         {
-            log->Fatal("Failed to start window state tracker, error code: " + std::to_string(errorCode));
+            FastLog::Win32::Fatal(log, "Failed to start window state tracker", errorCode);
             return false;
         }
 
         auto createTrayIconResult = TrayIcon::Create(instance, log, std::wstring(applicationName));
         if (!createTrayIconResult.has_value())
         {
-            log->Fatal("Failed to create tray icon, error code: " + std::to_string(createTrayIconResult.error()));
+            FastLog::Win32::Fatal(log, "Failed to create tray icon", createTrayIconResult.error());
             return false;
         }
         trayIcon = std::move(createTrayIconResult.value());

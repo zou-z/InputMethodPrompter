@@ -6,8 +6,6 @@ export module LogComponent;
 
 import std;
 
-export enum LogLevel { Info, Warn, Error, Fatal };
-
 export struct ILog
 {
     virtual ~ILog() = default;
@@ -20,6 +18,8 @@ export struct ILog
 export class Log :public ILog
 {
 public:
+    enum class LogLevel { Info, Warn, Error, Fatal };
+
     Log(const std::wstring& path, const std::wstring& name, LogLevel logLevel) :
         name(name),
         path(path + L"\\" + name + L".log"),
@@ -126,7 +126,36 @@ private:
     std::ofstream file;
 };
 
-export std::string HResultToString(HRESULT result)
+namespace FastLog
 {
-    return std::format("0x{:08X}", static_cast<std::uint32_t>(result));
+    namespace Win32
+    {
+        export void Error(const std::shared_ptr<ILog>& log, const std::string& message, DWORD errorCode)
+        {
+            log->Error(message + ", error code: " + std::to_string(errorCode));
+        }
+
+        export void Fatal(const std::shared_ptr<ILog>& log, const std::string& message, DWORD errorCode)
+        {
+            log->Fatal(message + ", error code: " + std::to_string(errorCode));
+        }
+    }
+
+    namespace HRESULT
+    {
+        static std::string HResultToString(::HRESULT result)
+        {
+            return std::format("0x{:08X}", static_cast<std::uint32_t>(result));
+        }
+
+        export void Error(const std::shared_ptr<ILog>& log, const std::string& message, ::HRESULT result)
+        {
+            log->Error(message + ", hr: " + HResultToString(result));
+        }
+
+        export void Fatal(const std::shared_ptr<ILog>& log, const std::string& message, ::HRESULT result)
+        {
+            log->Fatal(message + ", hr: " + HResultToString(result));
+        }
+    }
 }
