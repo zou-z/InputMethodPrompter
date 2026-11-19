@@ -14,6 +14,7 @@ import AutomationComponent;
 import FocusedTextBoxTracker;
 import TextBoxService;
 import KeyboardTracker;
+import WindowStateTracker;
 
 class SingletonMutex
 {
@@ -107,7 +108,8 @@ private:
             automation,
             textBoxService,
             promptData.FocusedTextBox,
-            promptData.ReleasedVirtualKeyCode
+            promptData.ReleasedVirtualKeyCode,
+            promptData.EventWindow
         );
         if (!createWindowResult.has_value())
         {
@@ -136,6 +138,14 @@ private:
         if (errorCode != ERROR_SUCCESS)
         {
             log->Fatal("Failed to statrt keyboard tracker, error code: " + std::to_string(errorCode));
+            return false;
+        }
+
+        windowStateTracker = std::make_unique<WindowStateTracker>(log, promptData.EventWindow);
+        errorCode = windowStateTracker->Start();
+        if (errorCode != ERROR_SUCCESS)
+        {
+            log->Error("Failed to start window state tracker, error code: " + std::to_string(errorCode));
             return false;
         }
 
@@ -182,4 +192,5 @@ private:
     std::shared_ptr<TextBoxService> textBoxService;
     std::unique_ptr<FocusedTextBoxTracker> focusedTextBoxTracker;
     std::unique_ptr<KeyboardTracker> keyboardTracker;
+    std::unique_ptr<WindowStateTracker> windowStateTracker;
 };

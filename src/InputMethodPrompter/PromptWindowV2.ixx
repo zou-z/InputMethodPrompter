@@ -220,13 +220,15 @@ protected:
         std::shared_ptr<IAutomation> automation,
         std::shared_ptr<ITextBoxLocator> textBoxLocator,
         std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox,
-        std::weak_ptr<IObservable<DWORD>> releasedVirtualKeyCode) :
+        std::weak_ptr<IObservable<DWORD>> releasedVirtualKeyCode,
+        std::weak_ptr<IObservable<HWND>> eventWindow) :
         log(std::move(log)),
         automation(std::move(automation)),
         textBoxLocator(std::move(textBoxLocator)),
         focusedTextBox(std::move(focusedTextBox)),
         textBoxProcessor([this](const auto& value) { OnFocusedTextBoxChanged(value); }),
-        virtualKeyCodeProcessor([this](const auto& value) { OnReleasedKeyChanged(value); })
+        virtualKeyCodeProcessor([this](const auto& value) { OnReleasedKeyChanged(value); }),
+        eventWindowProcessor([this](const auto& value) { OnEventWindowChanged(value); })
     {
         if (auto textBox = this->focusedTextBox.lock())
         {
@@ -240,6 +242,13 @@ protected:
             releasedVirtualKeyCodeSubscription = virtualKeyCode->Subscribe([this](const auto& code)
             {
                 virtualKeyCodeProcessor.Submit(code);
+            });
+        }
+        if (auto window = eventWindow.lock())
+        {
+            eventWindowSubscription = window->Subscribe([this](const auto& windowHandle)
+            {
+                eventWindowProcessor.Submit(windowHandle);
             });
         }
     }
@@ -302,10 +311,6 @@ protected:
     }
 
 private:
-    // 按下按键
-    // 窗口或输入框焦点变更
-    // 窗口尺寸变更，位置变更，最大化/最小化
-
     void OnFocusedTextBoxChanged(const std::optional<TextBoxElement>& focusedTextBox)
     {
         if (focusedTextBox.has_value())
@@ -357,6 +362,19 @@ private:
                     }
                 }
             }
+        }
+    }
+
+    void OnEventWindowChanged(const HWND& windowHandle)
+    {
+        if (windowHandle == nullptr || !GetState().IsShowing())
+            return;
+
+        if (auto textBox = focusedTextBox.lock())
+        {
+            const auto& textBoxElement = textBox->Get();
+            if (textBoxElement.has_value())
+                UpdateWindowPosition(textBoxElement.value());
         }
     }
 
@@ -433,6 +451,8 @@ private:
     std::weak_ptr<IObservable<std::optional<TextBoxElement>>> focusedTextBox;
     ConflatingProcessor<std::optional<TextBoxElement>> textBoxProcessor;
     ConflatingProcessor<DWORD> virtualKeyCodeProcessor;
+    ConflatingProcessor<HWND> eventWindowProcessor;
     Subscription textBoxSubscription;
     Subscription releasedVirtualKeyCodeSubscription;
+    Subscription eventWindowSubscription;
 };

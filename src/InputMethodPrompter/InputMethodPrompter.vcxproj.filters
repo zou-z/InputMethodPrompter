@@ -159,6 +159,9 @@
     <ClCompile Include="ConflationComponent.ixx">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="WindowStateTracker.ixx">
+      <Filter>Prompter\Tracker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="InputMethodPrompter.ico">

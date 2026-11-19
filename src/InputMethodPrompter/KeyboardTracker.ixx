@@ -67,6 +67,11 @@ public:
     {
     }
 
+    ~KeyboardTracker()
+    {
+        KeyboardHookV2::Uninstall();
+    }
+
     DWORD Start(HINSTANCE instance)
     {
         return KeyboardHookV2::Install(instance, [this](WPARAM wParam, LPARAM lParam)
