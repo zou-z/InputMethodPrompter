@@ -9,6 +9,11 @@ export enum class TextBoxType
 {
     Unknown,
     Normal,
+    WebPageContent,
+    VisualStudioEditor,
+    VisualStudioCodeEditor,
+    SublimeTextEditor,
+    ZedEditor,
 };
 
 export struct ITextBoxRecognizer
@@ -20,79 +25,166 @@ export struct ITextBoxRecognizer
 export struct ITextBoxLocator
 {
     virtual ~ITextBoxLocator() = default;
-    virtual bool GetPosition(
+    virtual std::expected<std::optional<RECT>, HRESULT> GetPosition(
         IAutomation* automation,
         IUIAutomationElement* element,
-        TextBoxType type,
-        RECT& position
+        TextBoxType type
     ) = 0;
 };
 
-export struct ITextBox : ITextBoxRecognizer, ITextBoxLocator
+struct ElementProperties
 {
-    virtual ~ITextBox() = default;
+    std::wstring Name;
+    std::wstring ClassName;
+    std::wstring FrameworkId;
 };
 
-class NormalTextBox :public ITextBox
+struct TextBoxBase
 {
-public:
-    virtual TextBoxType GetTextBoxType(IUIAutomationElement* element) override
+    virtual ~TextBoxBase() = default;
+    virtual bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) = 0;
+    virtual std::expected<RECT, HRESULT> GetPosition(IAutomation* automation, IUIAutomationElement* element)
     {
-        return AutomationOperation::CheckIsInputControl(element) ? TextBoxType::Normal : TextBoxType::Unknown;
-    }
-
-    virtual bool GetPosition(
-        IAutomation* automation,
-        IUIAutomationElement* element,
-        TextBoxType type,
-        RECT& position) override
-    {
-        return type == TextBoxType::Normal
-            ? SUCCEEDED(element->get_CurrentBoundingRectangle(&position))
-            : false;
+        RECT position{};
+        auto hr = element->get_CurrentBoundingRectangle(&position);
+        return SUCCEEDED(hr) ? std::expected<RECT, HRESULT>(position) : std::unexpected(hr);
     }
 };
 
+struct NormalTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        return AutomationOperation::CheckIsInputControl(element);
+    }
+};
 
+struct WebPageContentTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        if (properties.FrameworkId != L"Chrome")
+            return false;
 
-export class TextBoxService :public ITextBox
+        if (properties.ClassName == L"EdgePopupRowContentView")
+            return false;
+
+        BOOL hasKeyboardFocus = FALSE;
+        if (FAILED(element->get_CurrentHasKeyboardFocus(&hasKeyboardFocus)) || !hasKeyboardFocus)
+            return false;
+
+        CONTROLTYPEID controlType = 0;
+        if (FAILED(element->get_CurrentControlType(&controlType)) || controlType != UIA_GroupControlTypeId)
+            return false;
+
+        return true;
+    }
+};
+
+struct VisualStudioEditorTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        return properties.Name == L"Text Editor"
+            && properties.ClassName == L"WpfTextView"
+            && properties.FrameworkId == L"WPF";
+    }
+
+    std::expected<RECT, HRESULT> GetPosition(IAutomation* automation, IUIAutomationElement* element) override
+    {
+        return automation->GetParentElement(element)
+            .and_then([&](const auto& parentElement) -> std::expected<RECT, HRESULT>
+            {
+                return parentElement
+                    ? TextBoxBase::GetPosition(automation, parentElement.get())
+                    : std::unexpected(E_POINTER);
+            });
+    }
+};
+
+struct VisualStudioCodeEditorTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        return properties.ClassName == L"native-edit-context"
+            && properties.FrameworkId == L"Chrome";
+    }
+
+    std::expected<RECT, HRESULT> GetPosition(IAutomation* automation, IUIAutomationElement* element) override
+    {
+        return automation->GetParentElement(element)
+            .and_then([&](const auto& parentElement) -> std::expected<RECT, HRESULT>
+            {
+                return parentElement
+                    ? TextBoxBase::GetPosition(automation, parentElement.get())
+                    : std::unexpected(E_POINTER);
+            });
+    }
+};
+
+struct SublimeTextEditorTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        return properties.ClassName == L"PX_WINDOW_CLASS"
+            && properties.FrameworkId == L"Win32";
+    }
+};
+
+struct ZedEditorTextBox :TextBoxBase
+{
+    bool CheckTextBoxType(IUIAutomationElement* element, const ElementProperties& properties) override
+    {
+        return properties.ClassName == L"Zed::Window"
+            && properties.FrameworkId == L"Win32";
+    }
+};
+
+export class TextBoxService :public ITextBoxRecognizer, public ITextBoxLocator
 {
 public:
     TextBoxService()
     {
-        textBoxs.push_back(std::make_unique<NormalTextBox>());
-
-
-
+        textBoxs[TextBoxType::WebPageContent] = std::make_unique<WebPageContentTextBox>();
+        textBoxs[TextBoxType::VisualStudioEditor] = std::make_unique<VisualStudioEditorTextBox>();
+        textBoxs[TextBoxType::VisualStudioCodeEditor] = std::make_unique<VisualStudioCodeEditorTextBox>();
+        textBoxs[TextBoxType::SublimeTextEditor] = std::make_unique<SublimeTextEditorTextBox>();
+        textBoxs[TextBoxType::ZedEditor] = std::make_unique<ZedEditorTextBox>();
+        textBoxs[TextBoxType::Normal] = std::make_unique<NormalTextBox>();
     }
 
     TextBoxType GetTextBoxType(IUIAutomationElement* element) override
     {
-        for (const auto& textBox : textBoxs)
+        ElementProperties properties
         {
-            auto type = textBox->GetTextBoxType(element);
-            if (type != TextBoxType::Unknown)
+            .Name = AutomationOperation::GetElementName(element),
+            .ClassName = AutomationOperation::GetElementClassName(element),
+            .FrameworkId = AutomationOperation::GetElementFrameworkId(element)
+        };
+
+        for (const auto& [type, textBox] : textBoxs)
+        {
+            if (textBox->CheckTextBoxType(element, properties))
                 return type;
         }
 
         return TextBoxType::Unknown;
     }
 
-    bool GetPosition(
+    std::expected<std::optional<RECT>, HRESULT> GetPosition(
         IAutomation* automation,
         IUIAutomationElement* element,
-        TextBoxType type,
-        RECT& position) override
+        TextBoxType textBoxType) override
     {
-        for (const auto& textBox : textBoxs)
+        for (const auto& [type, textBox] : textBoxs)
         {
-            if (textBox->GetPosition(automation, element, type, position))
-                return true;
+            if (type == textBoxType)
+                return textBox->GetPosition(automation, element);
         }
 
-        return false;
+        return std::nullopt;
     }
 
 private:
-    std::vector<std::unique_ptr<ITextBox>> textBoxs;
+    std::unordered_map<TextBoxType, std::unique_ptr<TextBoxBase>> textBoxs;
 };

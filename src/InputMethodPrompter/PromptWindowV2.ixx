@@ -402,14 +402,26 @@ private:
 
     void UpdateWindowPosition(const TextBoxElement& textBoxElement)
     {
-        RECT rect;
-        if (textBoxLocator->GetPosition(automation.get(), textBoxElement.Value.get(), textBoxElement.Type, rect))
+        auto position = textBoxLocator->GetPosition(automation.get(), textBoxElement.Value.get(), textBoxElement.Type);
+        if (position.has_value())
         {
-            GetBounds().SetPosition(rect.left, rect.bottom);
+            if (position.value().has_value())
+            {
+                const auto& rect = position.value().value();
+                GetBounds().SetPosition(rect.left, rect.bottom);
+            }
+            else
+            {
+                log->Error("Failed to get textbox position");
+            }
         }
         else
         {
-            log->Error(std::string("Failed to get position of ").append(GetEnumString(textBoxElement.Type)));
+            FastLog::HRESULT::Error(
+                log,
+                std::string("Failed to get position of textbox type: ").append(GetEnumString(textBoxElement.Type)),
+                position.error()
+            );
         }
     }
 

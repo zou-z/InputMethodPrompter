@@ -40,9 +40,12 @@ export struct IAutomation
     virtual HRESULT UnregisterFocusChangedEvent() const = 0;
     virtual HWND GetWindowHandleOfElement(IUIAutomationElement* element) const = 0;
     virtual HRESULT CompareElements(
-       IUIAutomationElement* element1,
-       IUIAutomationElement* element2,
-       BOOL* areSame
+        IUIAutomationElement* element1,
+        IUIAutomationElement* element2,
+        BOOL* areSame
+    ) const = 0;
+    virtual std::expected<winrt::com_ptr<IUIAutomationElement>, HRESULT> GetParentElement(
+        IUIAutomationElement* element
     ) const = 0;
 };
 
@@ -110,6 +113,22 @@ public:
         BOOL* areSame) const override
     {
         return automation->CompareElements(element1, element2, areSame);
+    }
+
+    std::expected<winrt::com_ptr<IUIAutomationElement>, HRESULT> GetParentElement(
+        IUIAutomationElement* element) const override
+    {
+        winrt::com_ptr<IUIAutomationTreeWalker> walker;
+        auto hr = automation->get_ControlViewWalker(walker.put());
+        if (FAILED(hr))
+            return std::unexpected(hr);
+
+        winrt::com_ptr<IUIAutomationElement> parentElement;
+        hr = walker->GetParentElement(element, parentElement.put());
+        if (FAILED(hr))
+            return std::unexpected(hr);
+
+        return parentElement;
     }
 
 private:
