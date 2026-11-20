@@ -129,7 +129,7 @@ private:
             {
             case autoStartTrayId: SwitchAutoStart(); break;
             case aboutTrayId: ShowAbout(hWnd); break;
-            case exitTrayId: PostQuitMessage(0); break;
+            case exitTrayId: DestroyWindow(hWnd); return 0;
             }
             break;
         }

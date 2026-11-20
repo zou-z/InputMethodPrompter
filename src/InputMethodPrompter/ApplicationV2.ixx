@@ -63,20 +63,22 @@ public:
             DispatchMessage(&message);
         }
 
+        Uninitialize();
+
         return static_cast<int>(message.wParam);
     }
 
 private:
     bool EnsureSingleton(SingletonMutex& mutex)
     {
-        auto result = mutex.Create(L"InputMethodPrompter_SingletonMutex");
-        RETURN_IF(result == ERROR_SUCCESS, true);
+        auto errorCode = mutex.Create(L"InputMethodPrompter_SingletonMutex");
+        RETURN_IF(errorCode == ERROR_SUCCESS, true);
 
         MessageBox(
             nullptr,
-            result == ERROR_ALREADY_EXISTS
+            errorCode == ERROR_ALREADY_EXISTS
                 ? Strings::ApplicationAlreadyRunning.data()
-                : (L"Failed to create mutex, code: " + std::to_wstring(result)).c_str(),
+                : (L"Failed to create mutex, error code: " + std::to_wstring(errorCode)).c_str(),
             Strings::ApplicationName.data(),
             MB_OK | MB_ICONEXCLAMATION
         );
@@ -164,6 +166,21 @@ private:
         }
 
         return true;
+    }
+
+    void Uninitialize()
+    {
+        auto hr = focusedTextBoxTracker->Stop();
+        if (FAILED(hr))
+            FastLog::HRESULT::Error(log, "Failed to stop focused textbox tracker", hr);
+
+        auto errorCode = keyboardTracker->Stop();
+        if (errorCode != ERROR_SUCCESS)
+            FastLog::Win32::Error(log, "Failed to stop keyboard tracker", errorCode);
+
+        errorCode = windowStateTracker->Stop();
+        if (errorCode != ERROR_SUCCESS)
+            FastLog::Win32::Error(log, "Failed to stop window state tracker", errorCode);
     }
 
     static std::wstring GetApplicationPath(HINSTANCE instance)
